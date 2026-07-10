@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backlog Dashboard — 仕様書 / Specification</title>
+</head>
+<body>
+<style>
+  :root {
+    --ground: #f5f8f5; --surface: #ffffff; --surface-2: #eef3ef; --ink: #17231d;
+    --muted: #566159; --faint: #85938a; --border: #e1e7e1; --accent: #2f9e63;
+    --accent-soft: #e4f1e9; --accent-ink: #ffffff; --code-bg: #eff4ef; --code-ink: #1d4a33;
+    --shadow: 0 1px 2px rgba(20, 40, 30, .06), 0 8px 24px rgba(20, 40, 30, .05);
+    --radius: 12px; --maxw: 1120px;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #10150f; --surface: #182019; --surface-2: #212a22; --ink: #e6ece7;
+      --muted: #9ca89f; --faint: #6d7c72; --border: #2a332b; --accent: #5cc088;
+      --accent-soft: #172a1f; --accent-ink: #07130c; --code-bg: #1c251d; --code-ink: #8fd7ab;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #10150f; --surface: #182019; --surface-2: #212a22; --ink: #e6ece7;
+    --muted: #9ca89f; --faint: #6d7c72; --border: #2a332b; --accent: #5cc088;
+    --accent-soft: #172a1f; --accent-ink: #07130c; --code-bg: #1c251d; --code-ink: #8fd7ab;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"] {
+    --ground: #f5f8f5; --surface: #ffffff; --surface-2: #eef3ef; --ink: #17231d;
+    --muted: #566159; --faint: #85938a; --border: #e1e7e1; --accent: #2f9e63;
+    --accent-soft: #e4f1e9; --accent-ink: #ffffff; --code-bg: #eff4ef; --code-ink: #1d4a33;
+    --shadow: 0 1px 2px rgba(20,40,30,.06), 0 8px 24px rgba(20,40,30,.05);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .page { background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.62; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  .l-en { display: none; }
+  :root[data-lang="en"] .l-en { display: revert; }
+  :root[data-lang="en"] .l-ja { display: none; }
+
+  .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 14px; padding: 14px clamp(16px, 4vw, 40px); background: color-mix(in srgb, var(--ground) 86%, transparent); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 11px; margin-right: auto; min-width: 0; }
+  .bmark { width: 30px; height: 30px; border-radius: 8px; flex: none; background: linear-gradient(160deg, #63c886, #36995f); display: grid; place-items: center; font-family: var(--mono); font-weight: 700; font-size: 19px; color: #fff; box-shadow: 0 2px 6px rgba(54, 153, 95, .4); }
+  .brand .t { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+  .brand .t b { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+  .brand .t span { font-size: 11.5px; color: var(--muted); }
+  .chip { font-family: var(--mono); font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+  .controls { display: flex; align-items: center; gap: 6px; }
+  .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px; }
+  .seg button { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .02em; border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 4px 11px; border-radius: 999px; transition: .15s; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .shell { max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); padding: 40px clamp(16px, 4vw, 40px) 96px; }
+  nav.toc { position: sticky; top: 78px; align-self: start; height: max-content; }
+  nav.toc .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); padding: 0 10px 8px; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; }
+  nav.toc a { display: flex; gap: 10px; align-items: baseline; padding: 6px 10px; border-radius: 8px; text-decoration: none; color: var(--muted); font-size: 13px; border-left: 2px solid transparent; transition: .12s; }
+  nav.toc a .n { font-family: var(--mono); font-size: 11px; color: var(--faint); min-width: 15px; }
+  nav.toc a:hover { background: var(--surface-2); color: var(--ink); }
+  nav.toc a.active { color: var(--accent); background: var(--accent-soft); border-left-color: var(--accent); }
+  nav.toc a.active .n { color: var(--accent); }
+
+  main { min-width: 0; }
+  .lede { font-size: 17px; color: var(--muted); max-width: 66ch; margin: 0 0 8px; text-wrap: pretty; }
+  section { padding-top: 30px; margin-top: 18px; border-top: 1px solid var(--border); scroll-margin-top: 84px; }
+  section:first-of-type { border-top: 0; margin-top: 0; padding-top: 4px; }
+  h1 { font-size: clamp(28px, 4vw, 38px); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 12px; text-wrap: balance; }
+  h2 { font-size: 21px; letter-spacing: -.01em; margin: 0 0 14px; display: flex; align-items: baseline; gap: 12px; text-wrap: balance; }
+  h2 .num { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 7px; padding: 2px 8px; flex: none; border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
+  h3 { font-size: 14.5px; margin: 22px 0 8px; letter-spacing: -.005em; }
+  p { max-width: 68ch; margin: 0 0 12px; text-wrap: pretty; }
+  main ul { max-width: 68ch; margin: 0 0 12px; padding-left: 20px; }
+  main li { margin: 4px 0; }
+  code { font-family: var(--mono); font-size: .86em; background: var(--code-bg); color: var(--code-ink); padding: 1.5px 5px; border-radius: 5px; word-break: break-word; }
+  strong { font-weight: 640; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin: 0 0 4px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 14px 0; font-size: 14px; }
+  .note code { background: color-mix(in srgb, var(--surface) 60%, transparent); }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin: 6px 0 14px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; background: var(--surface); }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--faint); background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td code, td.k { font-family: var(--mono); }
+  .method { color: var(--accent); font-weight: 600; }
+
+  pre.diagram { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; margin: 6px 0 14px; font-family: var(--mono); font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
+  .chips code { background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); padding: 3px 8px; }
+
+  footer { max-width: var(--maxw); margin: 0 auto; padding: 24px clamp(16px,4vw,40px) 48px; color: var(--faint); font-size: 12.5px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; gap: 20px; padding-top: 24px; }
+    nav.toc { position: static; }
+    nav.toc ol { display: flex; flex-wrap: wrap; gap: 4px; }
+    nav.toc a { border-left: 0; }
+    .brand .t span { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  html { scroll-behavior: smooth; }
+</style>
+
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <div class="bmark">b</div>
+      <div class="t">
+        <b>Backlog Dashboard</b>
+        <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
+      </div>
+    </div>
+    <span class="chip">v0.2.2</span>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Language">
+        <button id="ja" aria-pressed="true">JA</button>
+        <button id="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="toc" aria-label="Contents">
+      <div class="eyebrow"><span class="l-ja">目次</span><span class="l-en">Contents</span></div>
+      <ol id="toc">
+        <li><a href="#s1"><span class="n">01</span><span class="l-ja">概要</span><span class="l-en">Overview</span></a></li>
+        <li><a href="#s2"><span class="n">02</span><span class="l-ja">動作要件</span><span class="l-en">Requirements</span></a></li>
+        <li><a href="#s3"><span class="n">03</span><span class="l-ja">画面仕様</span><span class="l-en">Screens</span></a></li>
+        <li><a href="#s4"><span class="n">04</span><span class="l-ja">通知</span><span class="l-en">Notifications</span></a></li>
+        <li><a href="#s5"><span class="n">05</span><span class="l-ja">アーキテクチャ</span><span class="l-en">Architecture</span></a></li>
+        <li><a href="#s6"><span class="n">06</span><span class="l-ja">データと永続化</span><span class="l-en">Data & storage</span></a></li>
+        <li><a href="#s7"><span class="n">07</span><span class="l-ja">Backlog API</span><span class="l-en">Backlog API</span></a></li>
+        <li><a href="#s8"><span class="n">08</span><span class="l-ja">ビルドと配布</span><span class="l-en">Build & dist</span></a></li>
+        <li><a href="#s9"><span class="n">09</span><span class="l-ja">既知の制約</span><span class="l-en">Limitations</span></a></li>
+        <li><a href="#s10"><span class="n">10</span><span class="l-ja">今後の候補</span><span class="l-en">Roadmap</span></a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <div style="margin-bottom:26px">
+        <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.2.2）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.2.2).</p>
+        <div class="chips">
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-11</code>
+        </div>
+      </div>
+
+      <section id="s1">
+        <h2><span class="num">01</span><span class="l-ja">概要</span><span class="l-en">Overview</span></h2>
+        <div class="l-ja">
+          <p>メニューバーの「b」アイコンをクリックするとポップアップが開き、未完了タスクの確認・更新、新規タスクの起票、Backlog 通知の受信・確認ができる。</p>
+          <ul>
+            <li>個人利用向けの単一ユーザーアプリ。各ユーザーは自分の Backlog API キーで接続する。</li>
+            <li>Backlog の <strong>REST API v2</strong> を直接呼び出す（MCP や中間サーバーは介さない）。</li>
+            <li>Electron 製。UI はフレームワーク非依存の素の HTML/CSS/JS。</li>
+          </ul>
+        </div>
+        <div class="l-en">
+          <p>Clicking the "b" icon in the menu bar opens a popover where you can review and update open tasks, create new tasks, and receive/review Backlog notifications.</p>
+          <ul>
+            <li>Single-user, personal-use app. Each user connects with their own Backlog API key.</li>
+            <li>Calls the <strong>Backlog REST API v2</strong> directly (no MCP, no intermediary server).</li>
+            <li>Built with Electron. The UI is plain HTML/CSS/JS with no framework.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="s2">
+        <h2><span class="num">02</span><span class="l-ja">動作要件</span><span class="l-en">Requirements</span></h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th><span class="l-ja">項目</span><span class="l-en">Item</span></th>
+              <th><span class="l-ja">内容</span><span class="l-en">Detail</span></th>
+            </tr></thead>
+            <tbody>
+              <tr><td>OS</td><td><span class="l-ja">macOS（Apple Silicon 専用ビルド）</span><span class="l-en">macOS (Apple Silicon build)</span></td></tr>
+              <tr><td><span class="l-ja">ランタイム</span><span class="l-en">Runtime</span></td><td><span class="l-ja">Electron 32（<code>.app</code> に同梱、別途インストール不要）</span><span class="l-en">Electron 32 (bundled in the <code>.app</code>)</span></td></tr>
+              <tr><td><span class="l-ja">ネットワーク</span><span class="l-en">Network</span></td><td><span class="l-ja">HTTPS で <code>https://&lt;your-space&gt;.backlog.com</code>（または <code>.jp</code>）</span><span class="l-en">HTTPS to <code>https://&lt;your-space&gt;.backlog.com</code> (or <code>.jp</code>)</span></td></tr>
+              <tr><td><span class="l-ja">認証情報</span><span class="l-en">Credentials</span></td><td><span class="l-ja">Backlog 個人 API キー（設定画面で入力）</span><span class="l-en">Personal Backlog API key (entered in Settings)</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="l-ja" style="font-size:13.5px;color:var(--muted)">開発時: Node.js（<code>fetch</code> 使用のため v18+ 相当）、macOS 標準の <code>iconutil</code> / <code>hdiutil</code>。</p>
+        <p class="l-en" style="font-size:13.5px;color:var(--muted)">Build-time: Node.js (v18+ for global <code>fetch</code>), macOS <code>iconutil</code> and <code>hdiutil</code>.</p>
+      </section>
+
+      <section id="s3">
+        <h2><span class="num">03</span><span class="l-ja">画面仕様</span><span class="l-en">Screens</span></h2>
+        <div class="note">
+          <span class="l-ja">共通ヘッダー: <code>‹ 戻る</code> / タイトル / <code>🔔 通知（未読バッジ）</code> / <code>+ 新規</code> / <code>⟳ 更新</code> / <code>⚙ 設定</code>。ウィンドウはフォーカス喪失・閉じるボタンで<strong>非表示</strong>になる（破棄されない）。</span>
+          <span class="l-en">Common header: <code>‹ Back</code> / title / <code>🔔 Notifications (unread badge)</code> / <code>+ New</code> / <code>⟳ Refresh</code> / <code>⚙ Settings</code>. The window <strong>hides</strong> (is not destroyed) on focus loss or close.</span>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <h3 style="margin-top:0"><span class="l-ja">タスク一覧 — Tasks</span><span class="l-en">Task list — Tasks</span></h3>
+            <div class="l-ja"><ul>
+              <li>自分が担当かつ未完了（<code>statusId</code> 1〜3）の課題。</li>
+              <li><strong>並び替え</strong>: 締切日順（既定・締切なしは末尾）／プロジェクト順／タスク名順。</li>
+              <li><strong>絞り込み</strong>: プロジェクト＋タスク名の部分一致（件名・課題キー）。</li>
+              <li>締切バッジ（超過=赤／間近=橙）、右下に「表示件数 / 全件」。</li>
+            </ul></div>
+            <div class="l-en"><ul>
+              <li>Issues assigned to you and open (<code>statusId</code> 1–3).</li>
+              <li><strong>Sort</strong>: due date (default; no-due last) / project / task name.</li>
+              <li><strong>Filter</strong>: project + task-name substring (summary, issue key).</li>
+              <li>Due badge (overdue = red / soon = orange), "visible / total" bottom-right.</li>
+            </ul></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0"><span class="l-ja">課題詳細 — Issue</span><span class="l-en">Issue detail — Issue</span></h3>
+            <div class="l-ja"><ul>
+              <li>件名・メタ情報、「Backlog で開く ↗」。</li>
+              <li><strong>ステータス変更</strong>（プロジェクトのステータス一覧から）。</li>
+              <li>説明・<strong>コメント一覧</strong>（変更ログ含む）。</li>
+              <li><strong>コメント投稿</strong>。更新後は再取得して再描画。</li>
+            </ul></div>
+            <div class="l-en"><ul>
+              <li>Summary, meta, "Open in Backlog ↗".</li>
+              <li><strong>Status change</strong> (from the project's status list).</li>
+              <li>Description and <strong>comment list</strong> (incl. change log).</li>
+              <li><strong>Comment form</strong>. Refetches and re-renders after updates.</li>
+            </ul></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0"><span class="l-ja">新規タスク — New Task</span><span class="l-en">New Task</span></h3>
+            <div class="l-ja"><ul>
+              <li>プロジェクト（必須）→ 種別（必須）／件名（必須）。</li>
+              <li>優先度（既定=中）／期限／説明。</li>
+              <li>作成成功でトースト表示 → 一覧へ戻る。</li>
+            </ul></div>
+            <div class="l-en"><ul>
+              <li>Project (required) → issue type (required) / summary (required).</li>
+              <li>Priority (default: Normal) / due date / description.</li>
+              <li>Toast on success → returns to the list.</li>
+            </ul></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0"><span class="l-ja">通知一覧 — Notifications</span><span class="l-en">Notifications</span></h3>
+            <div class="l-ja"><ul>
+              <li>最新 100 件を新しい順。未読は緑でハイライト。</li>
+              <li>差出人・種別・対象課題（<code>Key-keyId</code>）・日時。</li>
+              <li>行クリック→課題詳細へ＋既読化。「Mark all read」で全既読。</li>
+            </ul></div>
+            <div class="l-en"><ul>
+              <li>Latest 100, newest first. Unread highlighted in green.</li>
+              <li>Sender, reason, target issue (<code>Key-keyId</code>), time.</li>
+              <li>Click → issue detail + mark read. "Mark all read" clears all.</li>
+            </ul></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0"><span class="l-ja">設定 — Settings</span><span class="l-en">Settings</span></h3>
+            <div class="l-ja"><ul>
+              <li>スペースドメイン（例: <code>yourspace.backlog.com</code>）と API キー。</li>
+              <li>保存時に <code>/users/myself</code> で疎通確認。</li>
+              <li>「Open API key settings ↗」で発行ページを開く。</li>
+            </ul></div>
+            <div class="l-en"><ul>
+              <li>Space domain (e.g. <code>yourspace.backlog.com</code>) and API key.</li>
+              <li>Verifies via <code>/users/myself</code> on save.</li>
+              <li>"Open API key settings ↗" opens the issuance page.</li>
+            </ul></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s4">
+        <h2><span class="num">04</span><span class="l-ja">通知（デスクトップ通知）</span><span class="l-en">Desktop notifications</span></h2>
+        <div class="l-ja"><ul>
+          <li>メインプロセスが <strong>60 秒間隔</strong>（<code>POLL_INTERVAL_MS</code>）で通知 API をポーリング。</li>
+          <li><strong>新着判定</strong>: 保存済み <code>lastNotificationId</code> より大きい ID かつ未読を新着とみなし macOS ネイティブ通知を表示。</li>
+          <li><strong>初回起動時</strong>は最大 ID を基準保存するだけで通知は出さない（起動時スパム防止）。</li>
+          <li>通知タイトル=「差出人＋種別」、本文=「課題キー＋件名」。クリックで前面化し該当課題を表示。</li>
+          <li><strong>未読数</strong>をメニューバーアイコン横とヘッダーのベルバッジに反映。</li>
+          <li><code>lastNotificationId</code> は <code>notify-state.json</code> に永続化（再起動後の再通知を防止）。</li>
+        </ul></div>
+        <div class="l-en"><ul>
+          <li>The main process polls the notifications API every <strong>60s</strong> (<code>POLL_INTERVAL_MS</code>).</li>
+          <li><strong>New-item detection</strong>: IDs greater than the stored <code>lastNotificationId</code> and still unread are shown as native macOS notifications.</li>
+          <li><strong>On first launch</strong>, only the max ID is stored as a baseline — nothing fires (prevents startup spam).</li>
+          <li>Title = "sender + reason", body = "issue key + summary". Click brings the app forward and opens the issue.</li>
+          <li>The <strong>unread count</strong> shows next to the menu-bar icon and on the header bell badge.</li>
+          <li><code>lastNotificationId</code> is persisted to <code>notify-state.json</code> (no re-notify after restart).</li>
+        </ul></div>
+      </section>
+
+      <section id="s5">
+        <h2><span class="num">05</span><span class="l-ja">アーキテクチャ</span><span class="l-en">Architecture</span></h2>
+        <pre class="diagram">┌───────────────────── Main process (main.js) ─────────────────────┐
+│  Tray / BrowserWindow / single-instance / config + state          │
+│  Notification polling (setInterval) → Notification / unread count  │
+│  ipcMain.handle(...) ── delegates to BacklogClient                 │
+│                    │                                               │
+│              backlog.js  (BacklogClient · REST API v2)             │
+└────────────────────┼──────────────────────────────────────────────┘
+                     │  contextBridge (preload.js)
+┌────────────────────┼──────────────────────────────────────────────┐
+│  Renderer (renderer/app.js) — uses only window.api                 │
+│  Views: list · detail · add · notifications · settings             │
+└───────────────────────────────────────────────────────────────────┘</pre>
+        <div class="l-ja">
+          <p><strong>セキュリティ</strong>: <code>contextIsolation: true</code> / <code>nodeIntegration: false</code>。API キーはメインプロセスのみが保持し、レンダラーには渡さない。CSP で外部リソースを禁止。レンダラーに <code>innerHTML</code> 経路は無い（全てテキストノード）。</p>
+          <p><strong>ウィンドウ挙動</strong>: dock 非表示のアクセサリアプリ（<code>LSUIElement</code>）。メニューバー直下・右寄りに配置（トレイ座標が不正な場合のフォールバック付き）。<code>setVisibleOnAllWorkspaces</code> + <code>alwaysOnTop</code> で現在の Space／全画面上に表示。終了はトレイ右クリックの Quit のみ。</p>
+        </div>
+        <div class="l-en">
+          <p><strong>Security</strong>: <code>contextIsolation: true</code> / <code>nodeIntegration: false</code>. The API key stays in the main process, never passed to the renderer. CSP forbids external resources. The renderer has no <code>innerHTML</code> path (everything is a text node).</p>
+          <p><strong>Window behavior</strong>: dock-hidden accessory app (<code>LSUIElement</code>). Anchored just below the menu bar, toward the right (with a fallback for invalid tray coordinates). <code>setVisibleOnAllWorkspaces</code> + <code>alwaysOnTop</code> keep it above the current Space / full-screen apps. Truly quits only via the tray's Quit.</p>
+        </div>
+        <h3><span class="l-ja">ファイル構成</span><span class="l-en">File layout</span></h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><span class="l-ja">ファイル</span><span class="l-en">File</span></th><th><span class="l-ja">役割</span><span class="l-en">Role</span></th></tr></thead>
+            <tbody>
+              <tr><td class="k">main.js</td><td><span class="l-ja">メインプロセス（トレイ・ウィンドウ・IPC・設定・通知ポーリング）</span><span class="l-en">Main process (tray, window, IPC, config, notification polling)</span></td></tr>
+              <tr><td class="k">preload.js</td><td><span class="l-ja">contextBridge によるレンダラー向け API 公開</span><span class="l-en">Exposes a safe API to the renderer via contextBridge</span></td></tr>
+              <tr><td class="k">backlog.js</td><td><span class="l-ja">Backlog REST API v2 クライアント</span><span class="l-en">Backlog REST API v2 client</span></td></tr>
+              <tr><td class="k">renderer/*</td><td><span class="l-ja">UI（index.html / styles.css / app.js）</span><span class="l-en">UI (index.html / styles.css / app.js)</span></td></tr>
+              <tr><td class="k">pnglib.js</td><td><span class="l-ja">依存なし PNG エンコーダ</span><span class="l-en">Dependency-free PNG encoder</span></td></tr>
+              <tr><td class="k">make-backlog-icon.js</td><td><span class="l-ja">Backlog「b」からトレイ／アプリアイコン（.icns）生成</span><span class="l-en">Generates tray/app icons (.icns) from the Backlog "b"</span></td></tr>
+              <tr><td class="k">scripts/make-dmg.js</td><td><span class="l-ja"><code>hdiutil</code> で .dmg 作成</span><span class="l-en">Builds the .dmg via <code>hdiutil</code></span></td></tr>
+              <tr><td class="k">build/extend-info.plist</td><td><span class="l-ja"><code>LSUIElement</code> 等の Info.plist 追記</span><span class="l-en">Info.plist additions (<code>LSUIElement</code>, etc.)</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="s6">
+        <h2><span class="num">06</span><span class="l-ja">データと永続化</span><span class="l-en">Data & persistence</span></h2>
+        <div class="l-ja"><ul>
+          <li>設定: <code>~/Library/Application Support/backlog-dashboard/config.json</code>（<code>{ spaceDomain, apiKeyEnc }</code>、パーミッション 600）。</li>
+          <li><strong>API キーは macOS Keychain で暗号化保存</strong>（Electron <code>safeStorage</code>）。ディスク上には暗号文（<code>apiKeyEnc</code>）のみ、復号はメモリ上のみ。旧版の平文キーは起動時に自動移行。</li>
+          <li>通知状態: 同ディレクトリの <code>notify-state.json</code>（<code>{ lastNotificationId }</code>）。</li>
+          <li>外部送信は Backlog API のみ。<code>open:external</code> は <code>http(s)</code> の URL のみを開く。</li>
+        </ul></div>
+        <div class="l-en"><ul>
+          <li>Config: <code>~/Library/Application Support/backlog-dashboard/config.json</code> (<code>{ spaceDomain, apiKeyEnc }</code>, permission 600).</li>
+          <li><strong>The API key is encrypted at rest via the macOS Keychain</strong> (Electron <code>safeStorage</code>). Only the ciphertext (<code>apiKeyEnc</code>) is on disk; decrypted only in memory. Legacy plaintext keys are auto-migrated on launch.</li>
+          <li>Notification state: <code>notify-state.json</code> in the same directory (<code>{ lastNotificationId }</code>).</li>
+          <li>The only outbound traffic is to the Backlog API. <code>open:external</code> opens only <code>http(s)</code> URLs.</li>
+        </ul></div>
+      </section>
+
+      <section id="s7">
+        <h2><span class="num">07</span><span class="l-ja">Backlog REST API v2 の利用</span><span class="l-en">Backlog REST API v2 usage</span></h2>
+        <div class="note">
+          <span class="l-ja">ベース URL: <code>https://&lt;spaceDomain&gt;/api/v2</code>。認証は <code>apiKey</code> クエリパラメータ。書き込みは <code>application/x-www-form-urlencoded</code>（配列は <code>key[]</code>）。</span>
+          <span class="l-en">Base URL: <code>https://&lt;spaceDomain&gt;/api/v2</code>. Auth via the <code>apiKey</code> query param. Writes use <code>application/x-www-form-urlencoded</code> (arrays as <code>key[]</code>).</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><span class="l-ja">目的</span><span class="l-en">Purpose</span></th><th><span class="l-ja">メソッド / パス</span><span class="l-en">Method / path</span></th></tr></thead>
+            <tbody>
+              <tr><td><span class="l-ja">自分の情報</span><span class="l-en">Own user</span></td><td><code><span class="method">GET</span> /users/myself</code></td></tr>
+              <tr><td><span class="l-ja">未完了タスク</span><span class="l-en">Open tasks</span></td><td><code><span class="method">GET</span> /issues?assigneeId[]=&lt;me&gt;&amp;statusId[]=1..3&amp;sort=dueDate&amp;count=100</code></td></tr>
+              <tr><td><span class="l-ja">課題取得</span><span class="l-en">Get issue</span></td><td><code><span class="method">GET</span> /issues/:key</code></td></tr>
+              <tr><td><span class="l-ja">コメント一覧</span><span class="l-en">Comments</span></td><td><code><span class="method">GET</span> /issues/:key/comments</code></td></tr>
+              <tr><td><span class="l-ja">コメント投稿</span><span class="l-en">Post comment</span></td><td><code><span class="method">POST</span> /issues/:key/comments</code></td></tr>
+              <tr><td><span class="l-ja">ステータス変更</span><span class="l-en">Change status</span></td><td><code><span class="method">PATCH</span> /issues/:key</code></td></tr>
+              <tr><td><span class="l-ja">プロジェクト／種別／優先度</span><span class="l-en">Projects / types / priorities</span></td><td><code><span class="method">GET</span> /projects · /projects/:id/statuses · /projects/:id/issueTypes · /priorities</code></td></tr>
+              <tr><td><span class="l-ja">課題作成</span><span class="l-en">Create issue</span></td><td><code><span class="method">POST</span> /issues</code></td></tr>
+              <tr><td><span class="l-ja">通知一覧 / 未読数</span><span class="l-en">Notifications / unread</span></td><td><code><span class="method">GET</span> /notifications · /notifications/count?alreadyRead=false</code></td></tr>
+              <tr><td><span class="l-ja">既読 / 全既読</span><span class="l-en">Mark read / all</span></td><td><code><span class="method">POST</span> /notifications/:id/markAsRead · /notifications/markAsRead</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3><span class="l-ja">IPC チャンネル</span><span class="l-en">IPC channels</span></h3>
+        <div class="chips">
+          <code>config:get</code><code>config:set</code><code>tasks:mine</code><code>issue:detail</code><code>issue:comment</code><code>issue:status</code><code>form:options</code><code>form:issueTypes</code><code>issue:create</code><code>notifications:list</code><code>notifications:markRead</code><code>notifications:markAllRead</code><code>notifications:unread</code><code>open:external</code><code>space:domain</code>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:8px">
+          <span class="l-ja">メイン→レンダラーのイベント: </span><span class="l-en">Main → renderer events: </span>
+          <code>window:shown</code> · <code>tasks:refresh</code> · <code>notifications:updated</code> · <code>open-issue</code> · <code>open-notifications</code>
+        </p>
+      </section>
+
+      <section id="s8">
+        <h2><span class="num">08</span><span class="l-ja">ビルドと配布</span><span class="l-en">Build & distribution</span></h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><span class="l-ja">コマンド</span><span class="l-en">Command</span></th><th><span class="l-ja">内容</span><span class="l-en">Description</span></th></tr></thead>
+            <tbody>
+              <tr><td class="k">npm start</td><td><span class="l-ja">開発起動（<code>electron .</code>）</span><span class="l-en">Dev launch (<code>electron .</code>)</span></td></tr>
+              <tr><td class="k">npm run icons</td><td><span class="l-ja">トレイ＋アプリアイコンを再生成</span><span class="l-en">Regenerate tray + app icons</span></td></tr>
+              <tr><td class="k">npm run package</td><td><span class="l-ja"><code>.app</code>（arm64・<code>LSUIElement</code>）を生成</span><span class="l-en">Build the <code>.app</code> (arm64, <code>LSUIElement</code>)</span></td></tr>
+              <tr><td class="k">npm run dist</td><td><span class="l-ja">上記＋ <code>.dmg</code>（Applications ショートカット同梱）</span><span class="l-en">The above + a <code>.dmg</code> (with Applications shortcut)</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="l-ja"><p>バージョンは <code>package.json</code> の <code>version</code> が唯一の情報源（<code>.dmg</code> 名・バンドル version に反映）。</p></div>
+        <div class="l-en"><p>The <code>version</code> in <code>package.json</code> is the single source of truth (reflected in the <code>.dmg</code> name and bundle version).</p></div>
+        <div class="note">
+          <span class="l-ja"><strong>署名は ad-hoc のみ</strong>（Developer ID・公証なし）。他 Mac での初回起動時は quarantine 属性を削除:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
+          <span class="l-en"><strong>Ad-hoc signing only</strong> (no Developer ID / notarization). On first launch on another Mac, remove the quarantine attribute:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
+        </div>
+      </section>
+
+      <section id="s9">
+        <h2><span class="num">09</span><span class="l-ja">既知の制約 / 非対応</span><span class="l-en">Known limitations</span></h2>
+        <div class="l-ja"><ul>
+          <li><strong>Apple Silicon 専用</strong>（Intel Mac 非対応。ユニバーサルビルド未対応）。</li>
+          <li><strong>未署名</strong>のため配布時に Gatekeeper の手当てが必要。</li>
+          <li>未完了タスクは <code>statusId</code> 1〜3 のみ対象（独自の完了系カスタムステータスは想定外）。</li>
+          <li>タスク・通知とも最大 100 件（ページングなし）。</li>
+          <li>課題を伴わない通知（PR 等）はアプリ内詳細に遷移せず Backlog をブラウザで開く。</li>
+          <li>自動起動は手動設定。Slack 連携は未実装。</li>
+        </ul></div>
+        <div class="l-en"><ul>
+          <li><strong>Apple Silicon only</strong> (no Intel; universal build unsupported).</li>
+          <li><strong>Unsigned</strong>, so distribution needs a Gatekeeper workaround.</li>
+          <li>Open tasks cover only <code>statusId</code> 1–3 (custom "closed-like" statuses are out of scope).</li>
+          <li>Tasks and notifications are capped at 100 items (no pagination).</li>
+          <li>Notifications without an issue (PRs, etc.) open Backlog in the browser, not an in-app detail.</li>
+          <li>Auto-start is manual. Slack integration is not implemented.</li>
+        </ul></div>
+      </section>
+
+      <section id="s10">
+        <h2><span class="num">10</span><span class="l-ja">今後の候補</span><span class="l-en">Roadmap candidates</span></h2>
+        <div class="l-ja"><ul>
+          <li>Slack 連携（自分宛メンション・未読の取り込み）</li>
+          <li>ユニバーサルビルド（Intel 対応）</li>
+          <li>Developer ID 署名＋公証（配布の摩擦解消）</li>
+          <li>ログイン項目への自動登録</li>
+          <li>ページング／全ステータス対応の強化</li>
+        </ul></div>
+        <div class="l-en"><ul>
+          <li>Slack integration (pull in your mentions / unreads)</li>
+          <li>Universal build (Intel support)</li>
+          <li>Developer ID signing + notarization (smoother distribution)</li>
+          <li>Auto-registration as a login item</li>
+          <li>Pagination / full-status support</li>
+        </ul></div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <span class="l-ja">Backlog Dashboard v0.2.2 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.2.2 · personal tool · this page is self-contained HTML.</span>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    root.setAttribute('data-lang', 'ja');
+    var ja = document.getElementById('ja'), en = document.getElementById('en');
+    function setLang(l) {
+      root.setAttribute('data-lang', l);
+      ja.setAttribute('aria-pressed', l === 'ja');
+      en.setAttribute('aria-pressed', l === 'en');
+    }
+    ja.addEventListener('click', function () { setLang('ja'); });
+    en.addEventListener('click', function () { setLang('en'); });
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+    var map = {};
+    links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          if (map[e.target.id]) map[e.target.id].classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+    document.querySelectorAll('section[id]').forEach(function (s) { obs.observe(s); });
+  })();
+</script>
+
+</body>
+</html>
