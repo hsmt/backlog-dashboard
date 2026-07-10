@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:;" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Backlog Dashboard</title>
+</head>
+<body>
+  <header class="topbar">
+    <button id="backBtn" class="icon-btn hidden" title="Back">‹</button>
+    <h1 id="title">Tasks</h1>
+    <div class="spacer"></div>
+    <button id="notifBtn" class="icon-btn" title="Notifications">🔔<span id="notifBadge" class="notif-badge hidden"></span></button>
+    <button id="addBtn" class="icon-btn" title="New task">+</button>
+    <button id="refreshBtn" class="icon-btn" title="Refresh">⟳</button>
+    <button id="settingsBtn" class="icon-btn" title="Settings">⚙</button>
+  </header>
+
+  <main id="view"></main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

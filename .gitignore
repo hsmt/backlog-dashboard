@@ -1,0 +1,13 @@
+node_modules/
+# generated icons (rebuilt via `npm run icons`; source is assets/backlog-source.png)
+assets/trayTemplate*.png
+assets/appicon.iconset/
+assets/icon.icns
+assets/icon.png
+# secrets / runtime state (also live in userData, never in the repo)
+config.json
+notify-state.json
+# build output & noise
+dist/
+*.log
+.DS_Store
