@@ -2,6 +2,12 @@
 
 Mac のメニューバーに常駐する、個人用の Backlog タスクダッシュボード。
 
+## ドキュメント
+
+- 仕様書: [SPEC.ja.md](SPEC.ja.md)（日本語） / [SPEC.en.md](SPEC.en.md)（English）
+- 仕様書 Web ページ（日英トグル・ライト/ダーク対応）: [docs/spec.html](docs/spec.html)
+- 変更履歴: [CHANGELOG.md](CHANGELOG.md)
+
 ## 機能
 
 - **未完了タスク一覧** — 自分が担当の未完了課題を表示（メニューバーアイコンをクリックでポップアップ）
