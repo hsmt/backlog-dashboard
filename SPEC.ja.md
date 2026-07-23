@@ -1,7 +1,7 @@
 # Backlog Dashboard 仕様書
 
-- バージョン: 0.2.2
-- 最終更新: 2026-07-11
+- バージョン: 0.3.0
+- 最終更新: 2026-07-23
 - 対象プラットフォーム: macOS（Apple Silicon / arm64）
 
 ---
@@ -50,6 +50,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 
 ### 3.3 新規タスク（New Task）
 - 入力: プロジェクト（必須）→ 種別（必須・プロジェクト選択後に取得）／件名（必須）／優先度（既定=中）／期限／説明。
+- **プロジェクト選択は「最近使った順」**: 本フォームから起票したプロジェクトを最新順（最大 5 件）で記録し、次回以降 `Recent` グループの先頭に、残りは `All projects` グループに Backlog の返却順で表示する（履歴が無い場合は従来どおりのフラットな一覧）。現存しないプロジェクト（アーカイブ済み等）の履歴は自動的に無視する。
 - 作成成功でトーストを表示し、一覧へ戻る。
 
 ### 3.4 通知一覧（Notifications）
@@ -116,6 +117,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - 設定: `~/Library/Application Support/backlog-dashboard/config.json`（`{ spaceDomain, apiKeyEnc }`、パーミッション 600）。
 - **API キーは macOS Keychain で暗号化して保存**（Electron `safeStorage`）。ディスク上には暗号文（`apiKeyEnc`）のみが置かれ、復号はメモリ上でのみ行う。旧バージョンの平文 `apiKey` は起動時に自動で暗号化へ移行する。
 - 通知状態: 同ディレクトリの `notify-state.json`（`{ lastNotificationId }`）。
+- クイック追加フォームの「最近使ったプロジェクト」履歴はレンダラーの `localStorage`（キー `recentProjectIds`、プロジェクト ID を最新順で最大 5 件）に保存。UI 補助用途のためメインプロセスは経由しない。
 - 外部送信は Backlog API のみ。API キーが外部サービスに送られることはない。`open:external` は `http(s)` の URL のみを開く。
 
 ---

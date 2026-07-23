@@ -284,6 +284,25 @@ function commentRow(c) {
   );
 }
 
+// ---------- recent projects (persisted for the quick-add form) ----------
+// Track projects the user has created issues in, most-recent-first, so the
+// quick-add project picker surfaces them at the top. Stored in localStorage
+// (renderer-only convenience; no need to round-trip through the main process).
+const RECENT_PROJECTS_KEY = 'recentProjectIds';
+const RECENT_PROJECTS_MAX = 5;
+
+function loadRecentProjectIds() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(RECENT_PROJECTS_KEY) || '[]');
+    return Array.isArray(arr) ? arr.filter((n) => Number.isFinite(n)) : [];
+  } catch { return []; }
+}
+function recordRecentProject(id) {
+  if (!Number.isFinite(id)) return;
+  const next = [id, ...loadRecentProjectIds().filter((x) => x !== id)].slice(0, RECENT_PROJECTS_MAX);
+  try { localStorage.setItem(RECENT_PROJECTS_KEY, JSON.stringify(next)); } catch { /* storage full/blocked */ }
+}
+
 // ---------- quick add ----------
 async function renderAdd() {
   showLoading();
@@ -292,9 +311,20 @@ async function renderAdd() {
   catch (e) { showError(e); return; }
   clear();
 
+  // Order projects "recently used first": recent ones in recency order, then the
+  // rest in Backlog's original order. Only ids still present in `projects` count.
+  const optionFor = (p) => h('option', { value: p.id }, `${p.name} (${p.projectKey})`);
+  const byId = new Map(opts.projects.map((p) => [p.id, p]));
+  const recent = loadRecentProjectIds().map((id) => byId.get(id)).filter(Boolean);
+  const recentIds = new Set(recent.map((p) => p.id));
+  const rest = opts.projects.filter((p) => !recentIds.has(p.id));
+
   const projectSel = h('select', {},
     h('option', { value: '' }, 'Select a project…'),
-    ...opts.projects.map((p) => h('option', { value: p.id }, `${p.name} (${p.projectKey})`)));
+    ...(recent.length
+      ? [h('optgroup', { label: 'Recent' }, ...recent.map(optionFor)),
+         h('optgroup', { label: 'All projects' }, ...rest.map(optionFor))]
+      : opts.projects.map(optionFor)));
   const typeSel = h('select', { disabled: '' }, h('option', {}, '—'));
   const prioSel = h('select', {},
     ...opts.priorities.map((p) => h('option', { value: p.id, ...(p.id === 3 ? { selected: '' } : {}) }, p.name)));
@@ -328,6 +358,7 @@ async function renderAdd() {
         description: desc.value.trim() || undefined,
         dueDate: due.value || undefined,
       });
+      recordRecentProject(Number(projectSel.value));
       toast(`Created: ${issue.issueKey}`);
       go('list', renderList);
     } catch (e) { submit.disabled = false; submit.textContent = 'Create'; toast('Failed: ' + e.message); }

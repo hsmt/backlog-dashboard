@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.2.2
-- Last updated: 2026-07-11
+- Version: 0.3.0
+- Last updated: 2026-07-23
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -50,6 +50,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 
 ### 3.3 New Task
 - Inputs: project (required) → issue type (required; fetched after project selection) / summary (required) / priority (default: Normal) / due date / description.
+- **Project picker is ordered "recently used first"**: projects you've created issues in from this form are remembered most-recent-first (up to 5) and surfaced at the top under a `Recent` group, with the rest under `All projects` in Backlog's original order (a flat list when there's no history). History entries for projects that no longer exist (e.g. archived) are ignored automatically.
 - On success, shows a toast and returns to the list.
 
 ### 3.4 Notifications
@@ -116,6 +117,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - Config: `~/Library/Application Support/backlog-dashboard/config.json` (`{ spaceDomain, apiKeyEnc }`, permission 600).
 - **The API key is encrypted at rest via the macOS Keychain** (Electron `safeStorage`). Only the ciphertext (`apiKeyEnc`) is written to disk; it is decrypted only in memory. Legacy plaintext `apiKey` from older versions is auto-migrated to encrypted on launch.
 - Notification state: `notify-state.json` in the same directory (`{ lastNotificationId }`).
+- The quick-add form's "recently used projects" history is stored in the renderer's `localStorage` (key `recentProjectIds`, project ids most-recent-first, capped at 5). It's a UI convenience and does not go through the main process.
 - The only outbound traffic is to the Backlog API. The API key is never sent to any external service. `open:external` opens only `http(s)` URLs.
 
 ---

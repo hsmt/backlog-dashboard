@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.3.0] - 2026-07-23
+
+### Added / 追加
+- **EN:** The quick-add form's **project picker is now ordered "recently used first."** Projects you've created issues in from the form are remembered most-recent-first (up to 5) and shown at the top under a `Recent` group, with the rest under `All projects` in Backlog's original order. History is stored in the renderer's `localStorage` (`recentProjectIds`); entries for projects that no longer exist (e.g. archived) are ignored.
+- **JA:** クイック追加フォームの**プロジェクト選択を「最近使った順」に対応**。本フォームから起票したプロジェクトを最新順（最大 5 件）で記録し、`Recent` グループの先頭に、残りは `All projects` グループに Backlog の返却順で表示します。履歴はレンダラーの `localStorage`（`recentProjectIds`）に保存し、現存しないプロジェクト（アーカイブ済み等）の履歴は無視します。
+
+---
+
 ## [0.2.2] - 2026-07-11
 
 ### Security / セキュリティ
