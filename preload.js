@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('api', {
   onShown: (cb) => ipcRenderer.on('window:shown', cb),
   onRefresh: (cb) => ipcRenderer.on('tasks:refresh', cb),
   onNotificationsUpdated: (cb) => ipcRenderer.on('notifications:updated', (_e, count) => cb(count)),
+  onNotificationsNew: (cb) => ipcRenderer.on('notifications:new', () => cb()),
   onOpenIssue: (cb) => ipcRenderer.on('open-issue', (_e, key) => cb(key)),
   onOpenNotifications: (cb) => ipcRenderer.on('open-notifications', () => cb()),
 });

@@ -108,6 +108,13 @@ main {
 .notif .who b { font-weight: 600; }
 .notif .target { font-weight: 600; margin: 2px 0; word-break: break-word; }
 .notif .when { font-size: 11px; color: var(--muted); }
+.notif-read-btn {
+  -webkit-app-region: no-drag;
+  flex: none; align-self: flex-start; white-space: nowrap; cursor: pointer;
+  font-size: 11px; padding: 3px 8px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+}
+.notif-read-btn:hover { border-color: var(--accent); color: var(--text); }
 .notif-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .notif-head .link { font-size: 12px; }
 

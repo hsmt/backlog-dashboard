@@ -1,6 +1,6 @@
 # Backlog Dashboard 仕様書
 
-- バージョン: 0.3.0
+- バージョン: 0.4.0
 - 最終更新: 2026-07-23
 - 対象プラットフォーム: macOS（Apple Silicon / arm64）
 
@@ -57,7 +57,9 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - Backlog の通知（最新 100 件）を新しい順に表示。未読は緑でハイライト。
 - 各行: 差出人・種別（コメント/担当設定/更新/PR 等）・対象課題（`プロジェクトキー-keyId`）・日時。
 - 行クリック: 対象課題の詳細へ遷移し、その通知を既読化。課題を伴わない通知（PR 等）は Backlog をブラウザで開く。
+- 各行の **「Mark read」ボタン**（未読時のみ表示）でその通知だけを既読化。押すと行がその場で既読表示になり、未読数バッジも 1 減る（行クリックの遷移は発火しない）。
 - 「Mark all read」で全既読化。
+- **背景更新**: 通知一覧を開いている間に新着を検知すると、スピナーを出さずに一覧を自動で再取得・更新する（手動更新不要）。
 
 ### 3.5 設定（Settings）
 - スペースドメイン（例: `yourspace.backlog.com`）と API キーを入力し「Save & connect」。
@@ -72,7 +74,9 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - **新着判定**: 保存済みの `lastNotificationId` より大きい ID かつ未読の通知を新着とみなし、macOS ネイティブ通知を表示。
 - **初回起動時**は既存通知の最大 ID を基準値として保存するだけで通知は出さない（起動時スパム防止）。
 - 通知タイトル = 「差出人 + 種別」、本文 = 「課題キー + 件名」。クリックでアプリを前面化し該当課題を表示。
-- **未読数**を `/notifications/count?alreadyRead=false` から取得し、メニューバーアイコン横のタイトルとヘッダーのベルバッジに反映。
+- **未読数**を `/notifications/count?alreadyRead=false` から取得し、メニューバーアイコン横のタイトルとヘッダーのベルバッジに反映。メインプロセスが最新の未読数（`unreadCount`）を保持する。
+- **既読時のバッジ更新は楽観的**: Backlog の未読数 API は `markAsRead` 直後に古い値を返すことがあるため、既読操作時はメイン側で未読数を即座に -1 して両バッジへ反映し、次回の定期ポーリングで正確な値へ整合させる。
+- **新着検知時の背景更新**: 新着を検知するとレンダラーへ `notifications:new` を送信し、通知一覧を開いていれば背景で再描画させる。
 - `lastNotificationId` は `notify-state.json` に永続化（再起動後の再通知を防止）。
 
 ---
@@ -147,7 +151,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 
 ### IPC チャンネル
 `config:get` / `config:set` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`。
-メイン→レンダラーのイベント: `window:shown` / `tasks:refresh` / `notifications:updated` / `open-issue` / `open-notifications`。
+メイン→レンダラーのイベント: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new` / `open-issue` / `open-notifications`。
 
 ---
 

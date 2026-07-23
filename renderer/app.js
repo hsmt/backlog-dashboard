@@ -444,25 +444,47 @@ function notifRow(n) {
   const target = key
     ? `${key}  ${(n.issue && n.issue.summary) || ''}`.trim()
     : (n.project ? n.project.name : 'Backlog');
+
+  const dot = h('span', { class: `unread-dot ${n.alreadyRead ? 'read' : ''}` });
+  // Per-notification "mark as read" control; only shown while unread.
+  const readBtn = h('button', { class: 'notif-read-btn', title: 'Mark as read' }, 'Mark read');
+
   const row = h('div', { class: `notif ${n.alreadyRead ? '' : 'unread'}` },
-    h('span', { class: `unread-dot ${n.alreadyRead ? 'read' : ''}` }),
+    dot,
     h('div', { class: 'body' },
       h('div', { class: 'who' }, h('b', {}, sender), ' ' + reasonText(n.reason)),
       h('div', { class: 'target' }, target),
       h('div', { class: 'when' }, fmtDateTime(n.created)),
     ),
+    n.alreadyRead ? null : readBtn,
   );
-  row.addEventListener('click', async () => {
-    if (!n.alreadyRead) { n.alreadyRead = true; api.markNotificationRead(n.id).catch(() => {}); }
+
+  // Mark this one notification read and reflect it in place (badge refreshes via
+  // the main-process poll triggered by markNotificationRead).
+  const markRead = () => {
+    if (n.alreadyRead) return;
+    n.alreadyRead = true;
+    api.markNotificationRead(n.id).catch(() => {});
+    row.classList.remove('unread');
+    dot.classList.add('read');
+    readBtn.remove();
+  };
+
+  readBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // don't also open the issue / navigate
+    markRead();
+  });
+  row.addEventListener('click', () => {
+    markRead();
     if (key) openDetail(key);
     else api.openExternal(`https://${spaceDomain}/`);
   });
   return row;
 }
 
-async function renderNotifications() {
+async function renderNotifications({ background = false } = {}) {
   setChrome('notifications');
-  showLoading();
+  if (!background) showLoading(); // background refresh updates quietly, no spinner
   try {
     const list = await api.notifications();
     clear();
@@ -475,7 +497,7 @@ async function renderNotifications() {
     view.append(head);
     if (!list.length) { view.append(h('div', { class: 'empty' }, 'No notifications')); return; }
     for (const n of list) view.append(notifRow(n));
-  } catch (e) { showError(e); }
+  } catch (e) { if (!background) showError(e); /* stay put on a background refresh */ }
 }
 
 // ---------- wiring ----------
@@ -489,6 +511,8 @@ settingsBtn.addEventListener('click', () => go('settings', renderSettings));
 notifBtn.addEventListener('click', () => go('notifications', renderNotifications));
 api.onRefresh(() => { if (stack[stack.length - 1] === 'list') renderList(); });
 api.onNotificationsUpdated((count) => updateBadge(count));
+// New activity detected by the main-process poller → refresh an open list quietly.
+api.onNotificationsNew(() => { if (stack[stack.length - 1] === 'notifications') renderNotifications({ background: true }); });
 api.onOpenIssue((key) => openDetail(key));
 api.onOpenNotifications(() => go('notifications', renderNotifications));
 

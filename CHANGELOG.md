@@ -6,6 +6,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.4.0] - 2026-07-23
+
+### Added / 追加
+- **EN:** Each notification now has a per-row **"Mark read" button** (shown only while unread). It marks just that notification read, updates the row in place, and decrements the unread badge — without triggering the row's navigation to the issue.
+- **JA:** 通知一覧の各行に **「Mark read」ボタン**（未読時のみ表示）を追加。その通知だけを既読化し、行をその場で既読表示にして未読バッジを減らします（行クリックの課題遷移は発火しません）。
+- **EN:** **Background refresh** — while the notifications list is open, newly detected activity refreshes the list automatically (no spinner, no manual refresh). The main-process poller signals the renderer via a new `notifications:new` event.
+- **JA:** **背景更新** — 通知一覧を開いている間に新着を検知すると、スピナーを出さずに一覧を自動更新します（手動更新不要）。メインプロセスのポーラーが新設の `notifications:new` イベントでレンダラーに通知します。
+
+### Fixed / 修正
+- **EN:** The unread badge (menu-bar count and header bell) now **decrements immediately when a notification is marked read.** Backlog's unread-count endpoint can lag right after `markAsRead`, so the count is now updated optimistically on the main side and reconciled by the next scheduled poll.
+- **JA:** 通知を既読にしたときに、**未読バッジ（メニューバーの数字・ヘッダーのベル）が即座に減る**ようにしました。Backlog の未読数 API は `markAsRead` 直後に反映が遅れるため、メイン側で楽観的に更新し、次回の定期ポーリングで正確な値へ整合させます。
+
+---
+
 ## [0.3.0] - 2026-07-23
 
 ### Added / 追加

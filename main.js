@@ -13,6 +13,7 @@ let cachedUserId = null;
 let lastShownAt = 0; // guards against the spurious blur that fires right after show
 let pollTimer = null;
 let lastNotificationId = 0; // highest notification id we've already handled
+let unreadCount = 0; // last known unread count (source of truth for tray/header badge)
 
 // Single-instance: focus the existing window instead of launching a duplicate.
 if (!app.requestSingleInstanceLock()) {
@@ -116,8 +117,9 @@ function showNativeNotification(n) {
 }
 
 function updateUnread(count) {
-  if (tray && !tray.isDestroyed()) tray.setTitle(count > 0 ? ` ${count}` : '');
-  if (win && !win.isDestroyed()) win.webContents.send('notifications:updated', count);
+  unreadCount = Math.max(0, Math.trunc(count) || 0);
+  if (tray && !tray.isDestroyed()) tray.setTitle(unreadCount > 0 ? ` ${unreadCount}` : '');
+  if (win && !win.isDestroyed()) win.webContents.send('notifications:updated', unreadCount);
 }
 
 async function pollNotifications() {
@@ -133,6 +135,9 @@ async function pollNotifications() {
       for (const n of fresh) showNativeNotification(n);
       lastNotificationId = maxId;
       saveState({ lastNotificationId });
+      // Tell the renderer to refresh the notifications list in the background so
+      // an open list stays current without a manual refresh.
+      if (win && !win.isDestroyed()) win.webContents.send('notifications:new');
     }
     const res = await client.unreadNotificationCount().catch(() => ({ count: 0 }));
     updateUnread(res.count || 0);
@@ -345,7 +350,10 @@ ipcMain.handle('notifications:list', async () => {
 ipcMain.handle('notifications:markRead', async (_e, id) => {
   requireClient();
   const r = await client.markNotificationRead(id);
-  pollNotifications(); // refresh unread badge
+  // Decrement optimistically: Backlog's unread-count endpoint lags right after
+  // markAsRead, so polling here would report a stale (higher) count. The next
+  // scheduled poll reconciles the exact value.
+  updateUnread(unreadCount - 1);
   return r;
 });
 
@@ -359,7 +367,8 @@ ipcMain.handle('notifications:markAllRead', async () => {
 ipcMain.handle('notifications:unread', async () => {
   requireClient();
   const res = await client.unreadNotificationCount().catch(() => ({ count: 0 }));
-  return res.count || 0;
+  updateUnread(res.count || 0); // keep main's count in sync so later decrements are accurate
+  return unreadCount;
 });
 
 // ---- IPC: misc -------------------------------------------------------------

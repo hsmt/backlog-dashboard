@@ -1,6 +1,6 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.3.0
+- Version: 0.4.0
 - Last updated: 2026-07-23
 - Target platform: macOS (Apple Silicon / arm64)
 
@@ -57,7 +57,9 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - Lists Backlog notifications (latest 100) newest-first. Unread items are highlighted in green.
 - Each row: sender, reason (comment / assignment / update / PR, etc.), target issue (`ProjectKey-keyId`), timestamp.
 - Row click: navigate to the target issue's detail and mark that notification read. Notifications without an issue (e.g. PRs) open Backlog in the browser.
+- A per-row **"Mark read" button** (shown only while unread) marks just that notification read. It updates the row in place and decrements the unread badge by one, without triggering the row's navigation.
 - "Mark all read" clears all unread.
+- **Background refresh**: while the notifications list is open, newly detected activity refreshes the list automatically (no spinner, no manual refresh needed).
 
 ### 3.5 Settings
 - Enter the space domain (e.g. `yourspace.backlog.com`) and API key, then "Save & connect".
@@ -72,7 +74,9 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - **New-item detection**: notifications with an ID greater than the stored `lastNotificationId` and still unread are treated as new and shown as native macOS notifications.
 - **On first launch**, only the current max ID is stored as a baseline — no notifications are fired (prevents startup spam).
 - Notification title = "sender + reason", body = "issue key + summary". Clicking brings the app to the front and opens the related issue.
-- The **unread count** from `/notifications/count?alreadyRead=false` is reflected in the menu-bar icon title and the header bell badge.
+- The **unread count** from `/notifications/count?alreadyRead=false` is reflected in the menu-bar icon title and the header bell badge. The main process keeps the latest count (`unreadCount`) as its source of truth.
+- **Badge update on read is optimistic**: Backlog's unread-count endpoint can return a stale value right after `markAsRead`, so a read action decrements the main-side count by one immediately (updating both badges) and the next scheduled poll reconciles the exact value.
+- **Background refresh on new activity**: when new items are detected, the main process sends `notifications:new` to the renderer, which re-renders the notifications list in the background if it's open.
 - `lastNotificationId` is persisted to `notify-state.json` (prevents re-notifying after a restart).
 
 ---
@@ -147,7 +151,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 
 ### IPC channels
 `config:get` / `config:set` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`.
-Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:updated` / `open-issue` / `open-notifications`.
+Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new` / `open-issue` / `open-notifications`.
 
 ---
 

@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.3.0</span>
+    <span class="chip">v0.4.0</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,8 +149,8 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.3.0）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.3.0).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.4.0）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.4.0).</p>
         <div class="chips">
           <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-23</code>
         </div>
@@ -254,11 +254,15 @@
               <li>最新 100 件を新しい順。未読は緑でハイライト。</li>
               <li>差出人・種別・対象課題（<code>Key-keyId</code>）・日時。</li>
               <li>行クリック→課題詳細へ＋既読化。「Mark all read」で全既読。</li>
+              <li>各行の <code>Mark read</code>（未読時のみ）でその通知だけ既読化＋バッジを 1 減。</li>
+              <li>一覧を開いている間に新着を検知すると背景で自動更新。</li>
             </ul></div>
             <div class="l-en"><ul>
               <li>Latest 100, newest first. Unread highlighted in green.</li>
               <li>Sender, reason, target issue (<code>Key-keyId</code>), time.</li>
               <li>Click → issue detail + mark read. "Mark all read" clears all.</li>
+              <li>Per-row <code>Mark read</code> (unread only) reads just that item + drops the badge by one.</li>
+              <li>An open list refreshes in the background when new activity is detected.</li>
             </ul></div>
           </div>
           <div class="card">
@@ -284,7 +288,9 @@
           <li><strong>新着判定</strong>: 保存済み <code>lastNotificationId</code> より大きい ID かつ未読を新着とみなし macOS ネイティブ通知を表示。</li>
           <li><strong>初回起動時</strong>は最大 ID を基準保存するだけで通知は出さない（起動時スパム防止）。</li>
           <li>通知タイトル=「差出人＋種別」、本文=「課題キー＋件名」。クリックで前面化し該当課題を表示。</li>
-          <li><strong>未読数</strong>をメニューバーアイコン横とヘッダーのベルバッジに反映。</li>
+          <li><strong>未読数</strong>をメニューバーアイコン横とヘッダーのベルバッジに反映（メイン側が <code>unreadCount</code> を保持）。</li>
+          <li><strong>既読時のバッジは楽観的更新</strong>: count API の反映遅延を避け、既読操作で即座に -1 → 次回ポーリングで整合。</li>
+          <li><strong>新着時は背景更新</strong>: <code>notifications:new</code> を送り、開いている一覧を背景で再描画。</li>
           <li><code>lastNotificationId</code> は <code>notify-state.json</code> に永続化（再起動後の再通知を防止）。</li>
         </ul></div>
         <div class="l-en"><ul>
@@ -292,7 +298,9 @@
           <li><strong>New-item detection</strong>: IDs greater than the stored <code>lastNotificationId</code> and still unread are shown as native macOS notifications.</li>
           <li><strong>On first launch</strong>, only the max ID is stored as a baseline — nothing fires (prevents startup spam).</li>
           <li>Title = "sender + reason", body = "issue key + summary". Click brings the app forward and opens the issue.</li>
-          <li>The <strong>unread count</strong> shows next to the menu-bar icon and on the header bell badge.</li>
+          <li>The <strong>unread count</strong> shows next to the menu-bar icon and on the header bell badge (main holds <code>unreadCount</code>).</li>
+          <li><strong>Optimistic badge on read</strong>: to dodge the count API's lag, a read decrements by one immediately; the next poll reconciles.</li>
+          <li><strong>Background refresh on new activity</strong>: <code>notifications:new</code> re-renders an open list in the background.</li>
           <li><code>lastNotificationId</code> is persisted to <code>notify-state.json</code> (no re-notify after restart).</li>
         </ul></div>
       </section>
@@ -382,7 +390,7 @@
         </div>
         <p style="font-size:13px;color:var(--muted);margin-top:8px">
           <span class="l-ja">メイン→レンダラーのイベント: </span><span class="l-en">Main → renderer events: </span>
-          <code>window:shown</code> · <code>tasks:refresh</code> · <code>notifications:updated</code> · <code>open-issue</code> · <code>open-notifications</code>
+          <code>window:shown</code> · <code>tasks:refresh</code> · <code>notifications:updated</code> · <code>notifications:new</code> · <code>open-issue</code> · <code>open-notifications</code>
         </p>
       </section>
 
@@ -448,8 +456,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.3.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.3.0 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.4.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.4.0 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 
