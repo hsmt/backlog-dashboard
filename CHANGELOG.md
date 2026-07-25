@@ -6,6 +6,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.4.1] - 2026-07-24
+
+### Fixed / 修正
+- **EN:** Going back from an issue opened via a notification now returns to the **notifications list** instead of the task list. The back-navigation dispatch was missing the `notifications` view and fell through to the task list.
+- **JA:** 通知から開いた課題詳細で「戻る」を押したとき、タスク一覧ではなく**お知らせ一覧**に戻るよう修正しました。戻る処理の振り分けに `notifications` が無く、タスク一覧にフォールバックしていました。
+
+### Changed / 変更
+- **EN:** The notifications list no longer reloads with a spinner every time it opens. It now paints instantly from a session cache and revalidates quietly in the background (stale-while-revalidate): reopening the list or returning from an issue detail is immediate and preserves scroll position, unchanged data skips the repaint, and the cache is warmed at startup and on new activity while the list is closed. "Mark all read" now reflects locally instead of refetching.
+- **JA:** 通知一覧を開くたびにスピナー付きで再ロードしていた挙動を変更。直近取得結果のセッションキャッシュから即描画し、裏で静かに最新化する Stale-While-Revalidate 方式にしました。一覧の再オープンや課題詳細からの復帰が即座になり（スクロール位置も維持）、内容に変化が無ければ再描画をスキップします。キャッシュは起動時と、一覧非表示中の新着検知時に裏で温めます。「Mark all read」も再取得せずローカルに反映するようにしました。
+
+---
+
 ## [0.4.0] - 2026-07-23
 
 ### Added / 追加

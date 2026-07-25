@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.4.0
-- Last updated: 2026-07-23
+- Version: 0.4.1
+- Last updated: 2026-07-24
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -60,6 +60,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - A per-row **"Mark read" button** (shown only while unread) marks just that notification read. It updates the row in place and decrements the unread badge by one, without triggering the row's navigation.
 - "Mark all read" clears all unread.
 - **Background refresh**: while the notifications list is open, newly detected activity refreshes the list automatically (no spinner, no manual refresh needed).
+- **Instant paint (cache)**: reopening the list or returning from a detail view paints instantly from the last fetch (a session cache) and revalidates quietly in the background (stale-while-revalidate). If nothing changed, it skips the repaint and preserves scroll position. The cache is warmed at startup and whenever new activity is detected while the list is closed, so even the first open rarely waits.
 
 ### 3.5 Settings
 - Enter the space domain (e.g. `yourspace.backlog.com`) and API key, then "Save & connect".

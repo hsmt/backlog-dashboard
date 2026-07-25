@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.4.0</span>
+    <span class="chip">v0.4.1</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.4.0）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.4.0).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.4.1）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.4.1).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-23</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-24</code>
         </div>
       </div>
 
@@ -256,6 +256,7 @@
               <li>行クリック→課題詳細へ＋既読化。「Mark all read」で全既読。</li>
               <li>各行の <code>Mark read</code>（未読時のみ）でその通知だけ既読化＋バッジを 1 減。</li>
               <li>一覧を開いている間に新着を検知すると背景で自動更新。</li>
+              <li>再オープン・詳細からの復帰はキャッシュから即描画→裏で最新化（SWR）。</li>
             </ul></div>
             <div class="l-en"><ul>
               <li>Latest 100, newest first. Unread highlighted in green.</li>
@@ -263,6 +264,7 @@
               <li>Click → issue detail + mark read. "Mark all read" clears all.</li>
               <li>Per-row <code>Mark read</code> (unread only) reads just that item + drops the badge by one.</li>
               <li>An open list refreshes in the background when new activity is detected.</li>
+              <li>Reopening / returning from detail paints instantly from cache, then revalidates (SWR).</li>
             </ul></div>
           </div>
           <div class="card">
@@ -456,8 +458,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.4.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.4.0 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.4.1 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.4.1 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 

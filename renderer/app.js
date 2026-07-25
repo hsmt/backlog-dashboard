@@ -106,7 +106,7 @@ function back() {
   stack.pop();
   const prev = stack[stack.length - 1] || 'list';
   setChrome(prev);
-  ({ list: renderList, add: renderAdd, settings: renderSettings }[prev] || renderList)();
+  ({ list: renderList, add: renderAdd, settings: renderSettings, notifications: renderNotifications }[prev] || renderList)();
 }
 
 // ---------- task list ----------
@@ -482,22 +482,59 @@ function notifRow(n) {
   return row;
 }
 
+// Session cache so reopening the list (or coming back from a detail view) paints
+// instantly from the last fetch, then revalidates quietly in the background.
+let notifCache = null;
+
+// Warm the cache without touching the UI (used at startup and while the
+// notifications view is closed, so the next open is instant and fresh).
+async function prefetchNotifications() {
+  try { notifCache = await api.notifications(); } catch { /* keep whatever we have */ }
+}
+const notifSig = (l) => l.map((n) => `${n.id}:${n.alreadyRead ? 1 : 0}`).join(',');
+
+function paintNotifications(list) {
+  const scrollTop = view.scrollTop; // keep the reading position across repaints
+  clear();
+  const head = h('div', { class: 'notif-head' },
+    h('span', { class: 'meta' }, `${list.length} notifications`),
+    h('a', { class: 'link', onclick: async () => {
+      try {
+        await api.markAllNotificationsRead();
+        // Reflect locally instead of refetching: the server can briefly keep
+        // reporting items unread right after markAsRead.
+        list.forEach((n) => { n.alreadyRead = true; });
+        toast('All marked as read');
+        paintNotifications(list);
+      } catch (e) { toast('Failed: ' + e.message); }
+    } }, 'Mark all read'));
+  view.append(head);
+  if (!list.length) view.append(h('div', { class: 'empty' }, 'No notifications'));
+  else for (const n of list) view.append(notifRow(n));
+  view.scrollTop = scrollTop;
+}
+
 async function renderNotifications({ background = false } = {}) {
   setChrome('notifications');
-  if (!background) showLoading(); // background refresh updates quietly, no spinner
+  const hadCache = !!notifCache;
+  if (!background) {
+    if (hadCache) paintNotifications(notifCache); // instant paint from cache
+    else showLoading(); // first open this session: nothing cached yet
+  }
   try {
     const list = await api.notifications();
-    clear();
-    const head = h('div', { class: 'notif-head' },
-      h('span', { class: 'meta' }, `${list.length} notifications`),
-      h('a', { class: 'link', onclick: async () => {
-        try { await api.markAllNotificationsRead(); toast('All marked as read'); renderNotifications(); }
-        catch (e) { toast('Failed: ' + e.message); }
-      } }, 'Mark all read'));
-    view.append(head);
-    if (!list.length) { view.append(h('div', { class: 'empty' }, 'No notifications')); return; }
-    for (const n of list) view.append(notifRow(n));
-  } catch (e) { if (!background) showError(e); /* stay put on a background refresh */ }
+    const changed = !notifCache || notifSig(list) !== notifSig(notifCache);
+    notifCache = list;
+    // Don't clobber another view if the user navigated away mid-fetch.
+    if (stack[stack.length - 1] !== 'notifications') return;
+    // Repaint only when the data changed, or when the spinner is still up
+    // (first foreground load). Otherwise the cached paint already matches.
+    if (changed || (!background && !hadCache)) paintNotifications(list);
+  } catch (e) {
+    // With a cached view on screen, silently keep it; error out only on a
+    // foreground load with nothing to show.
+    if (!background && !notifCache) showError(e);
+  }
 }
 
 // ---------- wiring ----------
@@ -511,8 +548,12 @@ settingsBtn.addEventListener('click', () => go('settings', renderSettings));
 notifBtn.addEventListener('click', () => go('notifications', renderNotifications));
 api.onRefresh(() => { if (stack[stack.length - 1] === 'list') renderList(); });
 api.onNotificationsUpdated((count) => updateBadge(count));
-// New activity detected by the main-process poller → refresh an open list quietly.
-api.onNotificationsNew(() => { if (stack[stack.length - 1] === 'notifications') renderNotifications({ background: true }); });
+// New activity detected by the main-process poller → refresh an open list
+// quietly, or just re-warm the cache when the list isn't on screen.
+api.onNotificationsNew(() => {
+  if (stack[stack.length - 1] === 'notifications') renderNotifications({ background: true });
+  else prefetchNotifications();
+});
 api.onOpenIssue((key) => openDetail(key));
 api.onOpenNotifications(() => go('notifications', renderNotifications));
 
@@ -523,6 +564,7 @@ api.onOpenNotifications(() => go('notifications', renderNotifications));
     if (!cfg.hasApiKey) { renderSettings(); return; }
   } catch {}
   renderList();
+  prefetchNotifications(); // warm the cache so the first open of the list is instant
   try { updateBadge(await api.unreadCount()); } catch {}
 })();
 })();
