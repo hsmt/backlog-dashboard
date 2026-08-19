@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.7.0] - 2026-07-28
+
+### Changed / 変更
+- **EN:** Reworked the visual design to look more like Backlog itself. The accent color is now `#4cba95`, sampled directly from the official Backlog "b" mark bundled in the app (`assets/backlog-source.png`), replacing the previous approximate green. Status badges (in the task list and issue detail) now use **Backlog's own per-status color** (e.g. Open = salmon, In Progress = blue, Resolved = teal), returned by the API, instead of a single flat green for every status — with automatic black/white text selection for readability against each background.
+- **JA:** 見た目を Backlog 本家により近づけるようデザインを刷新しました。アクセントカラーをアプリ同梱の Backlog 公式「b」ロゴ画像（`assets/backlog-source.png`）から実測した `#4cba95` に変更（従来の近似的な緑から置き換え）。タスク一覧・課題詳細のステータスバッジは、API が返す **Backlog 本家のステータスごとの色**（例: Open=サーモン、In Progress=青、Resolved=ティール）をそのまま反映するようにし、全ステータス一律の緑バッジをやめました。背景色に応じて文字色（黒/白）を自動選択し、可読性を確保しています。
+
+---
+
 ## [0.6.1] - 2026-07-27
 
 ### Fixed / 修正

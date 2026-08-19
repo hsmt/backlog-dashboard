@@ -12,7 +12,7 @@ A personal, menu-bar-resident Backlog task dashboard for Mac.
 
 ## Features
 
-- **Open task list** — shows your assigned open issues (click the menu-bar icon to open the popover)
+- **Open task list** — shows your assigned open issues (click the menu-bar icon to open the popover). Status badges mirror **Backlog's own status colors**
 - **Sorting** — by due date / project / task name
 - **Filtering** — by project, and by task name (substring, incremental)
 - **Issue detail** — selecting a task shows its description and comment history, with inline **comment posting** and **status changes**. Comments can `@`-mention project members to send Backlog **notifications (お知らせ)**

@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.6.1
-- Last updated: 2026-07-27
+- Version: 0.7.0
+- Last updated: 2026-07-28
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -38,11 +38,11 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - Shows issues assigned to you that are open (`statusId` 1–3).
 - **Sort**: due date (default; no-due sorts last) / project / task name (Japanese-aware).
 - **Filter**: project (dropdown derived from the issue-key prefix) + incremental task-name substring match (summary and issue key).
-- Each card: issue-type color, issue key, summary, status, priority, due badge (overdue = red / soon = orange).
+- Each card: issue-type color, issue key, summary, status badge (**colored per Backlog's own status color**), priority, due badge (overdue = red / soon = orange).
 - Shows "visible / total" count at the bottom right. Click a card to open detail.
 
 ### 3.2 Issue detail (Issue)
-- Issue key, "Open in Backlog ↗" (launches browser), summary, meta (type / priority / due).
+- Issue key, **status badge** (colored per Backlog's own status color), "Open in Backlog ↗" (launches browser), summary, meta (type / priority / due).
 - **Status change**: pick from the project's status list and update.
 - **Description** display.
 - **Comment list** (author, timestamp, body, change log).

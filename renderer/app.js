@@ -200,11 +200,31 @@ function taskCard(it) {
     ),
     h('div', { class: 'summary' }, it.summary),
     h('div', { class: 'row2' },
-      h('span', { class: 'badge status' }, it.status ? it.status.name : ''),
+      it.status ? statusBadge(it.status) : null,
       it.priority ? h('span', { class: 'badge' }, it.priority.name) : null,
       du ? h('span', { class: `badge due ${du.cls}` }, 'Due ' + du.label) : null,
     ),
   );
+}
+
+// Backlog assigns each status its own color (e.g. Open=salmon, In Progress=blue,
+// Resolved=teal) — the API returns it on the status object, so mirror it here
+// instead of a single flat color for every status.
+function statusBadge(status) {
+  const bg = status.color || 'var(--accent)';
+  return h('span', { class: 'badge status', style: `background:${bg}; color:${readableTextOn(bg)}` }, status.name);
+}
+// Pick black/white text for a hex background by WCAG relative luminance. The
+// crossover where black overtakes white in contrast ratio is L > 0.179 (solving
+// contrast(black,bg) = contrast(white,bg)), not L > 0.5 — most Backlog status
+// colors (salmon/blue/teal) are mid-luminance and read better with dark text.
+function readableTextOn(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return '#fff';
+  const [r, g, b] = [m[1], m[2], m[3]].map((h) => parseInt(h, 16) / 255);
+  const lin = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return L > 0.179 ? '#1b1f27' : '#fff';
 }
 
 // ---------- detail ----------
@@ -221,6 +241,7 @@ async function renderDetail(issueKey) {
     wrap.append(
       h('div', { class: 'row2' },
         h('span', { class: 'key' }, issue.issueKey),
+        issue.status ? statusBadge(issue.status) : null,
         h('a', { class: 'link', onclick: () => api.openExternal(url) }, 'Open in Backlog ↗'),
       ),
       h('h2', {}, issue.summary),

@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.6.1</span>
+    <span class="chip">v0.7.0</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.6.1）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.6.1).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.7.0）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.7.0).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-27</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-28</code>
         </div>
       </div>
 
@@ -209,26 +209,26 @@
               <li>自分が担当かつ未完了（<code>statusId</code> 1〜3）の課題。</li>
               <li><strong>並び替え</strong>: 締切日順（既定・締切なしは末尾）／プロジェクト順／タスク名順。</li>
               <li><strong>絞り込み</strong>: プロジェクト＋タスク名の部分一致（件名・課題キー）。</li>
-              <li>締切バッジ（超過=赤／間近=橙）、右下に「表示件数 / 全件」。</li>
+              <li><strong>ステータスバッジ</strong>は Backlog 側のステータス色をそのまま反映。締切バッジ（超過=赤／間近=橙）、右下に「表示件数 / 全件」。</li>
             </ul></div>
             <div class="l-en"><ul>
               <li>Issues assigned to you and open (<code>statusId</code> 1–3).</li>
               <li><strong>Sort</strong>: due date (default; no-due last) / project / task name.</li>
               <li><strong>Filter</strong>: project + task-name substring (summary, issue key).</li>
-              <li>Due badge (overdue = red / soon = orange), "visible / total" bottom-right.</li>
+              <li><strong>Status badge</strong> mirrors Backlog's own status color. Due badge (overdue = red / soon = orange), "visible / total" bottom-right.</li>
             </ul></div>
           </div>
           <div class="card">
             <h3 style="margin-top:0"><span class="l-ja">課題詳細 — Issue</span><span class="l-en">Issue detail — Issue</span></h3>
             <div class="l-ja"><ul>
-              <li>件名・メタ情報、「Backlog で開く ↗」。</li>
+              <li>課題キー・<strong>ステータスバッジ</strong>（Backlog 側の色を反映）・件名・メタ情報、「Backlog で開く ↗」。</li>
               <li><strong>ステータス変更</strong>（プロジェクトのステータス一覧から）。</li>
               <li>説明・<strong>コメント一覧</strong>（変更ログ含む）。</li>
               <li><strong>コメント投稿</strong>。更新後は再取得して再描画。</li>
               <li><strong>＠メンション通知</strong>: <code>@</code> で参加ユーザー候補→選択で通知対象に。チップで管理し <code>notifiedUserId[]</code> でお知らせ送信。</li>
             </ul></div>
             <div class="l-en"><ul>
-              <li>Summary, meta, "Open in Backlog ↗".</li>
+              <li>Issue key, <strong>status badge</strong> (colored per Backlog's status color), summary, meta, "Open in Backlog ↗".</li>
               <li><strong>Status change</strong> (from the project's status list).</li>
               <li>Description and <strong>comment list</strong> (incl. change log).</li>
               <li><strong>Comment form</strong>. Refetches and re-renders after updates.</li>
@@ -466,8 +466,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.6.1 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.6.1 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.7.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.7.0 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 
