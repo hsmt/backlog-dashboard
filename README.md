@@ -1,5 +1,7 @@
 # Backlog Dashboard
 
+*[日本語](README.md) | [English](README.en.md)*
+
 Mac のメニューバーに常駐する、個人用の Backlog タスクダッシュボード。
 
 ## ドキュメント
