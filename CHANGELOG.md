@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.6.1] - 2026-07-27
+
+### Fixed / 修正
+- **EN:** macOS native notifications (Notification Center) weren't reliably reaching users because the packaged `.app` kept Electron's own generic ad-hoc signature identifier (`Electron`) instead of this app's bundle id — macOS couldn't stably associate per-app permissions like notifications with it. `npm run package` now explicitly ad-hoc-signs the built app with `--identifier com.masanorihashimoto.backlogdashboard` after packaging, so macOS can consistently identify it across rebuilds. The notification-sending code itself (`showNativeNotification` in `main.js`, using Electron's `Notification` API) was already correct and unchanged.
+- **JA:** macOS のネイティブ通知（通知センター）が安定して届かない不具合を修正しました。原因は、パッケージ済み `.app` の署名識別子が独自のバンドルIDではなく、Electron 本体標準の汎用 ad-hoc 識別子（`Electron`）のままだったこと — これにより macOS が通知許可などアプリ単位の権限を安定して紐づけられていませんでした。`npm run package` がパッケージング後に `--identifier com.masanorihashimoto.backlogdashboard` で明示的に ad-hoc 署名するようにし、再ビルドをまたいでも macOS が一貫してアプリを識別できるようにしました。通知送信自体のコード（`main.js` の `showNativeNotification`、Electron `Notification` API 使用）はもともと正しく、変更していません。
+
+---
+
 ## [0.6.0] - 2026-07-26
 
 ### Added / 追加

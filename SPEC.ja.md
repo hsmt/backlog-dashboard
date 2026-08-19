@@ -1,7 +1,7 @@
 # Backlog Dashboard 仕様書
 
-- バージョン: 0.6.0
-- 最終更新: 2026-07-26
+- バージョン: 0.6.1
+- 最終更新: 2026-07-27
 - 対象プラットフォーム: macOS（Apple Silicon / arm64）
 
 ---
@@ -170,7 +170,11 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 | `npm run dist` | 上記＋ `.dmg`（Applications ショートカット同梱、ドラッグインストール）を生成 |
 
 - バージョンは `package.json` の `version` が唯一の情報源（`.dmg` 名・バンドル version に反映）。
-- 署名は **ad-hoc のみ**（Developer ID 署名・公証なし）。他 Mac での初回起動時は quarantine 属性の削除が必要:
+- 署名は **ad-hoc のみ**（Developer ID 署名・公証なし）。`npm run package` が電子パッケージング後に
+  `codesign --sign - --identifier com.masanorihashimoto.backlogdashboard` を実行し、**独自のバンドルIDを明示的に付与**する。
+  これを省くと `@electron/packager` が生成する `.app` の署名識別子が Electron 本体標準の汎用値（`Electron`）のままになり、
+  macOS の通知許可などアプリ単位の権限が正しく機能しない（他の未署名 Electron アプリと識別が衝突しうる）。
+- 他 Mac での初回起動時は quarantine 属性の削除が必要:
   `xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app`
 
 ---

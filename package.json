@@ -1,6 +1,6 @@
 {
   "name": "backlog-dashboard",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Menu-bar resident dashboard for your Backlog tasks",
   "main": "main.js",
   "author": "Masanori Hashimoto",
@@ -9,7 +9,7 @@
     "icons": "node make-backlog-icon.js",
     "start": "electron .",
     "postinstall": "node make-backlog-icon.js",
-    "package": "npm run icons && electron-packager . BacklogDashboard --platform=darwin --arch=arm64 --icon=assets/icon.icns --out=dist --overwrite --app-bundle-id=com.masanorihashimoto.backlogdashboard --extend-info=build/extend-info.plist --prune=true --ignore=\"^/(dist|build|assets/appicon.iconset)($|/)\"",
+    "package": "npm run icons && electron-packager . BacklogDashboard --platform=darwin --arch=arm64 --icon=assets/icon.icns --out=dist --overwrite --app-bundle-id=com.masanorihashimoto.backlogdashboard --extend-info=build/extend-info.plist --prune=true --ignore=\"^/(dist|build|assets/appicon.iconset)($|/)\" && codesign --force --deep --sign - --identifier com.masanorihashimoto.backlogdashboard dist/BacklogDashboard-darwin-arm64/BacklogDashboard.app",
     "dist": "npm run package && node scripts/make-dmg.js"
   },
   "devDependencies": {

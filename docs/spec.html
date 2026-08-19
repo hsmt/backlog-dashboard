@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.6.0</span>
+    <span class="chip">v0.6.1</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.6.0）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.6.0).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.6.1）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.6.1).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-26</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-27</code>
         </div>
       </div>
 
@@ -418,8 +418,8 @@
         <div class="l-ja"><p>バージョンは <code>package.json</code> の <code>version</code> が唯一の情報源（<code>.dmg</code> 名・バンドル version に反映）。</p></div>
         <div class="l-en"><p>The <code>version</code> in <code>package.json</code> is the single source of truth (reflected in the <code>.dmg</code> name and bundle version).</p></div>
         <div class="note">
-          <span class="l-ja"><strong>署名は ad-hoc のみ</strong>（Developer ID・公証なし）。他 Mac での初回起動時は quarantine 属性を削除:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
-          <span class="l-en"><strong>Ad-hoc signing only</strong> (no Developer ID / notarization). On first launch on another Mac, remove the quarantine attribute:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
+          <span class="l-ja"><strong>署名は ad-hoc のみ</strong>（Developer ID・公証なし）。<code>npm run package</code> がパッケージング後に <code>codesign --sign - --identifier com.masanorihashimoto.backlogdashboard</code> を実行し、独自のバンドルIDを明示的に付与する（省くと Electron 本体標準の汎用識別子のままになり、通知許可などアプリ単位の権限が正しく機能しない）。他 Mac での初回起動時は quarantine 属性を削除:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
+          <span class="l-en"><strong>Ad-hoc signing only</strong> (no Developer ID / notarization). <code>npm run package</code> runs <code>codesign --sign - --identifier com.masanorihashimoto.backlogdashboard</code> after packaging to stamp the app's own bundle id onto the signature (skipping this leaves Electron's generic signature identifier, breaking per-app permissions like notifications). On first launch on another Mac, remove the quarantine attribute:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
         </div>
       </section>
 
@@ -466,8 +466,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.6.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.6.0 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.6.1 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.6.1 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 

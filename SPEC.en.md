@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.6.0
-- Last updated: 2026-07-26
+- Version: 0.6.1
+- Last updated: 2026-07-27
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -170,7 +170,12 @@ Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:upda
 | `npm run dist` | The above + a `.dmg` (with an Applications shortcut for drag-install) |
 
 - The version in `package.json` is the single source of truth (reflected in the `.dmg` name and bundle version).
-- Signing is **ad-hoc only** (no Developer ID signing or notarization). On first launch on another Mac, remove the quarantine attribute:
+- Signing is **ad-hoc only** (no Developer ID signing or notarization). After packaging, `npm run package` runs
+  `codesign --sign - --identifier com.masanorihashimoto.backlogdashboard` to **explicitly stamp the app's own bundle id**
+  onto the signature. Without this, `@electron/packager`'s output keeps Electron's own generic signature identifier
+  (`Electron`), which makes macOS unable to reliably distinguish this app for per-app permissions like notifications
+  (it can collide with other unsigned Electron apps built locally).
+- On first launch on another Mac, remove the quarantine attribute:
   `xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app`
 
 ---
