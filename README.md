@@ -10,6 +10,13 @@ Mac のメニューバーに常駐する、個人用の Backlog タスクダッ�
 - 仕様書 Web ページ（日英トグル・ライト/ダーク対応）: [docs/spec.html](docs/spec.html)
 - 変更履歴: [CHANGELOG.md](CHANGELOG.md)
 
+## インストール
+
+1. [最新リリース](https://github.com/hsmt/backlog-dashboard/releases/latest) から `BacklogDashboard-<version>-arm64.dmg` をダウンロード（対応環境: macOS / Apple Silicon）
+2. DMG を開き、`Backlog Dashboard` を `Applications` へドラッグ＆ドロップ
+3. **未署名アプリのため、初回起動時に Gatekeeper の警告が出ます。** `Applications` の `Backlog Dashboard.app` を**右クリック → 開く**を選択してください（「システム設定 > プライバシーとセキュリティ」からの許可でも可）
+4. 起動するとメニューバーに Backlog の「b」アイコンが表示され、設定画面が開きます。「セットアップ」（下記）の手順でスペースドメインと API キーを入力してください
+
 ## 機能
 
 - **未完了タスク一覧** — 自分が担当の未完了課題を表示（メニューバーアイコンをクリックでポップアップ）。ステータスバッジは **Backlog 本家の色**をそのまま反映
@@ -21,13 +28,7 @@ Mac のメニューバーに常駐する、個人用の Backlog タスクダッ�
 
 ## セットアップ
 
-```bash
-cd /Users/masa/Projects/backlog-dashboard
-npm install        # Electron を取得（初回のみ）
-npm start          # 起動
-```
-
-起動するとメニューバーに Backlog の「b」アイコンが出ます。初回は設定画面が開くので:
+初回起動時（インストール版・ソース実行版どちらも共通）は設定画面が開くので:
 
 1. **スペース ドメイン**: 自分の Backlog スペースのドメイン（例: `yourspace.backlog.com` / `yourspace.backlog.jp`）
 2. **API キー**: Backlog の個人設定で発行して貼り付け
@@ -36,6 +37,19 @@ npm start          # 起動
 3. 「Save & connect」を押すと接続確認され、タスク一覧が表示されます
 
 API キーは **macOS Keychain で暗号化**（Electron `safeStorage`）して `~/Library/Application Support/backlog-dashboard/config.json`（パーミッション 600）に保存されます。ディスク上には暗号文のみが置かれ、Backlog 以外の外部には一切送信されません。
+
+## ソースから実行する場合（開発者向け）
+
+インストーラーを使わず、リポジトリから直接起動することもできます。
+
+```bash
+git clone https://github.com/hsmt/backlog-dashboard.git
+cd backlog-dashboard
+npm install        # Electron を取得（初回のみ）
+npm start          # 起動
+```
+
+初回起動時の設定手順は上記「セットアップ」と共通です。
 
 ## 使い方
 
@@ -82,9 +96,9 @@ npm run dist      # 上記 + dist/BacklogDashboard-<version>-arm64.dmg を生成
 ```
 
 - `@electron/packager` で `.app` を作成（Apple Silicon / arm64）。`LSUIElement` を有効にした
-  メニューバー常駐アプリとしてビルドされます。
+  メニューバー常駐アプリとしてビルドされます。ビルド後、`codesign --sign - --identifier
+  com.masanorihashimoto.backlogdashboard` で ad-hoc 署名（詳細は [SPEC.ja.md](SPEC.ja.md) 8章）。
 - `.dmg` は macOS 標準の `hdiutil` で作成。中に `Applications` へのショートカットを含むので、
   ドラッグ＆ドロップでインストールできます。
-- **コード署名はしていません。** 初回起動時は Gatekeeper の警告が出るため、`.app` を
-  **右クリック → 開く**（または「システム設定 > プライバシーとセキュリティ」で許可）してください。
+- **コード署名は ad-hoc のみ**（Developer ID・公証なし）。初回起動時の Gatekeeper 対応は上記「インストール」を参照してください。
 - ログイン時に自動起動したい場合は「システム設定 > 一般 > ログイン項目」に `.app` を追加します。
