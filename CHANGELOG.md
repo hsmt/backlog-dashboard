@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.7.1] - 2026-07-29
+
+### Changed / 変更
+- **EN:** Clicking a macOS native notification now **opens the item on Backlog's web page in the browser** (`https://<space>/view/<issue-key>`, same target as the in-app "Open in Backlog ↗" link) instead of opening the app's own popover. Notifications without an issue (e.g. PRs) open the space's home page, matching how the in-app notifications list already handles that case. Removed the now-unused `open-issue` / `open-notifications` IPC events.
+- **JA:** macOS のネイティブ通知をクリックしたときの挙動を変更し、アプリのポップオーバーを開く代わりに**該当課題を Backlog のブラウザページで開く**（`https://<space>/view/<課題キー>`、アプリ内の「Open in Backlog ↗」と同じ遷移先）ようにしました。課題を伴わない通知（PR 等）はスペースのトップページを開き、アプリ内通知一覧の既存の挙動と揃えています。不要になった IPC イベント `open-issue` / `open-notifications` は削除しました。
+
+---
+
 ## [0.7.0] - 2026-07-28
 
 ### Changed / 変更

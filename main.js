@@ -107,11 +107,12 @@ function showNativeNotification(n) {
     ? `${key}  ${(n.issue && n.issue.summary) || ''}`.trim()
     : (n.project ? n.project.name : 'Backlog');
   const notif = new Notification({ title, body });
+  // Clicking a macOS notification opens the item in the browser (same target as
+  // the in-app "Open in Backlog ↗" link), rather than the app's own popover.
   notif.on('click', () => {
-    showWindow();
-    if (!win || win.isDestroyed()) return;
-    if (key) win.webContents.send('open-issue', key);
-    else win.webContents.send('open-notifications');
+    if (!client) return;
+    const url = key ? `https://${client.spaceDomain}/view/${key}` : `https://${client.spaceDomain}/`;
+    shell.openExternal(url);
   });
   notif.show();
 }

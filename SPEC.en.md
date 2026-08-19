@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.7.0
-- Last updated: 2026-07-28
+- Version: 0.7.1
+- Last updated: 2026-07-29
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -76,7 +76,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - The main process polls the Backlog notifications API every **60 seconds** (`POLL_INTERVAL_MS`).
 - **New-item detection**: notifications with an ID greater than the stored `lastNotificationId` and still unread are treated as new and shown as native macOS notifications.
 - **On first launch**, only the current max ID is stored as a baseline — no notifications are fired (prevents startup spam).
-- Notification title = "sender + reason", body = "issue key + summary". Clicking brings the app to the front and opens the related issue.
+- Notification title = "sender + reason", body = "issue key + summary". **Clicking opens the issue on Backlog's web page** (`https://<space>/view/<issue-key>`) in the browser (notifications without an issue open the space's home page). The app's popover is not opened.
 - The **unread count** from `/notifications/count?alreadyRead=false` is reflected in the menu-bar icon title and the header bell badge. The main process keeps the latest count (`unreadCount`) as its source of truth.
 - **Badge update on read is optimistic**: Backlog's unread-count endpoint can return a stale value right after `markAsRead`, so a read action decrements the main-side count by one immediately (updating both badges) and the next scheduled poll reconciles the exact value.
 - **Background refresh on new activity**: when new items are detected, the main process sends `notifications:new` to the renderer, which re-renders the notifications list in the background if it's open.
@@ -156,7 +156,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 
 ### IPC channels
 `config:get` / `config:set` / `me:id` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `form:projectUsers` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`.
-Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new` / `open-issue` / `open-notifications`.
+Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new`.
 
 ---
 

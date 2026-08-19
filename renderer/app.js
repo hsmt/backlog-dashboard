@@ -694,8 +694,6 @@ api.onNotificationsNew(() => {
   if (stack[stack.length - 1] === 'notifications') renderNotifications({ background: true });
   else prefetchNotifications();
 });
-api.onOpenIssue((key) => openDetail(key));
-api.onOpenNotifications(() => go('notifications', renderNotifications));
 
 (async function init() {
   try { spaceDomain = await api.spaceDomain(); } catch {}
