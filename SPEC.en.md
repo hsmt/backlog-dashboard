@@ -181,6 +181,7 @@ Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:upda
 - Both tasks and notifications are capped at 100 items (no pagination).
 - Notifications without an issue (PRs, etc.) open Backlog in the browser rather than an in-app detail.
 - Auto-start (login item) is configured manually. Slack integration is not implemented.
+- **"Mark read" does not guarantee the sender-visible green checkmark from Backlog's お知らせ (notification) feature**: the app's "Mark read" / "Mark all read" call the documented read APIs (`POST /notifications/:id/markAsRead`, `POST /notifications/markAsRead`), but testing against a real account showed no observable change to the target notification's `alreadyRead` or to the unread-count endpoint even 50 seconds after the call. Per [Backlog's お知らせ機能の概要](https://support-ja.backlog.com/hc/ja/articles/360035642454), the sender-side green checkmark is described as tied to viewing via the global bar (Backlog's web UI bell), which the public REST API may not be able to reproduce reliably.
 
 ---
 

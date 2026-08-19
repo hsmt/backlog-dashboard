@@ -181,6 +181,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - タスク・通知とも最大 100 件（ページングなし）。
 - PR 等・課題を伴わない通知はアプリ内詳細に遷移せず Backlog をブラウザで開く。
 - 自動起動（ログイン項目）は手動設定。Slack 連携は未実装。
+- **「Mark read」は Backlog お知らせ機能の送信者側グリーンチェックを保証しない**: 本アプリの「Mark read」/「Mark all read」は公式ドキュメント記載の既読 API（`POST /notifications/:id/markAsRead`・`POST /notifications/markAsRead`）を呼んでいるが、実アカウントでの検証では、この呼び出し後 50 秒待っても対象通知の `alreadyRead` や未読数 API に変化が確認できなかった。[お知らせ機能の概要](https://support-ja.backlog.com/hc/ja/articles/360035642454) にある「送信者アイコンのグリーンチェック」は、記事の記述上グローバルバー（Backlog Web UI のベル）からの確認に紐づく挙動であり、公開 REST API 経由では確実に再現できない可能性がある。
 
 ---
 

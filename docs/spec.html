@@ -429,6 +429,7 @@
           <li>タスク・通知とも最大 100 件（ページングなし）。</li>
           <li>課題を伴わない通知（PR 等）はアプリ内詳細に遷移せず Backlog をブラウザで開く。</li>
           <li>自動起動は手動設定。Slack 連携は未実装。</li>
+          <li><strong>「Mark read」は送信者側グリーンチェックを保証しない</strong>: 公式の既読 API を呼ぶが、実測では <code>alreadyRead</code>・未読数の変化を確認できず、グリーンチェックは Web UI 閲覧に紐づく可能性がある（<a href="https://support-ja.backlog.com/hc/ja/articles/360035642454" target="_blank" rel="noopener">お知らせ機能の概要</a>）。</li>
         </ul></div>
         <div class="l-en"><ul>
           <li><strong>Apple Silicon only</strong> (no Intel; universal build unsupported).</li>
@@ -437,6 +438,7 @@
           <li>Tasks and notifications are capped at 100 items (no pagination).</li>
           <li>Notifications without an issue (PRs, etc.) open Backlog in the browser, not an in-app detail.</li>
           <li>Auto-start is manual. Slack integration is not implemented.</li>
+          <li><strong>"Mark read" doesn't guarantee the sender-side green checkmark</strong>: it calls the official read API, but testing showed no observable change to <code>alreadyRead</code> or the unread count — the checkmark may be tied to web-UI viewing (<a href="https://support-ja.backlog.com/hc/ja/articles/360035642454" target="_blank" rel="noopener">お知らせ機能の概要</a>).</li>
         </ul></div>
       </section>
 
