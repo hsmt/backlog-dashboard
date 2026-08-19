@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.7.1</span>
+    <span class="chip">v0.8.0</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.7.1）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.7.1).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.8.0）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.8.0).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-29</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-30</code>
         </div>
       </div>
 
@@ -199,8 +199,8 @@
       <section id="s3">
         <h2><span class="num">03</span><span class="l-ja">画面仕様</span><span class="l-en">Screens</span></h2>
         <div class="note">
-          <span class="l-ja">共通ヘッダー: <code>‹ 戻る</code> / タイトル / <code>🔔 通知（未読バッジ）</code> / <code>+ 新規</code> / <code>⟳ 更新</code> / <code>⚙ 設定</code>。ウィンドウはフォーカス喪失・閉じるボタンで<strong>非表示</strong>になる（破棄されない）。</span>
-          <span class="l-en">Common header: <code>‹ Back</code> / title / <code>🔔 Notifications (unread badge)</code> / <code>+ New</code> / <code>⟳ Refresh</code> / <code>⚙ Settings</code>. The window <strong>hides</strong> (is not destroyed) on focus loss or close.</span>
+          <span class="l-ja">共通ヘッダー: <code>‹ 戻る</code> / タイトル / <strong>未読数バッジ</strong>（通知一覧へ） / <code>+ 新規</code> / <code>⟳ 更新</code> / <code>⚙ 設定</code>。ウィンドウはフォーカス喪失・閉じるボタンで<strong>非表示</strong>になる（破棄されない）。</span>
+          <span class="l-en">Common header: <code>‹ Back</code> / title / <strong>unread-count badge</strong> (opens notifications) / <code>+ New</code> / <code>⟳ Refresh</code> / <code>⚙ Settings</code>. The window <strong>hides</strong> (is not destroyed) on focus loss or close.</span>
         </div>
         <div class="grid2">
           <div class="card">
@@ -294,7 +294,8 @@
           <li><strong>新着判定</strong>: 保存済み <code>lastNotificationId</code> より大きい ID かつ未読を新着とみなし macOS ネイティブ通知を表示。</li>
           <li><strong>初回起動時</strong>は最大 ID を基準保存するだけで通知は出さない（起動時スパム防止）。</li>
           <li>通知タイトル=「差出人＋種別」、本文=「課題キー＋件名」。<strong>クリックで該当課題を Backlog のブラウザページで開く</strong>（課題を伴わない通知はスペースのトップ）。アプリは開かない。</li>
-          <li><strong>未読数</strong>をメニューバーアイコン横とヘッダーのベルバッジに反映（メイン側が <code>unreadCount</code> を保持）。</li>
+          <li><strong>未読数</strong>をメニューバーアイコン横とヘッダーの未読数バッジに反映（メイン側が <code>unreadCount</code> を保持）。</li>
+          <li><strong>ヘッダーの未読数バッジ</strong>: 18px の円に件数（10 件以上は <code>9+</code>）。未読=赤 <code>#c84553</code>／0 件=グレーに「0」で<strong>常時表示</strong>（通知一覧への唯一の導線のため）。いずれも白文字に対し 4.5:1 以上。</li>
           <li><strong>既読時のバッジは楽観的更新</strong>: count API の反映遅延を避け、既読操作で即座に -1 → 次回ポーリングで整合。</li>
           <li><strong>新着時は背景更新</strong>: <code>notifications:new</code> を送り、開いている一覧を背景で再描画。</li>
           <li><code>lastNotificationId</code> は <code>notify-state.json</code> に永続化（再起動後の再通知を防止）。</li>
@@ -304,7 +305,8 @@
           <li><strong>New-item detection</strong>: IDs greater than the stored <code>lastNotificationId</code> and still unread are shown as native macOS notifications.</li>
           <li><strong>On first launch</strong>, only the max ID is stored as a baseline — nothing fires (prevents startup spam).</li>
           <li>Title = "sender + reason", body = "issue key + summary". <strong>Click opens the issue on Backlog's web page in the browser</strong> (notifications without an issue open the space home). Doesn't open the app.</li>
-          <li>The <strong>unread count</strong> shows next to the menu-bar icon and on the header bell badge (main holds <code>unreadCount</code>).</li>
+          <li>The <strong>unread count</strong> shows next to the menu-bar icon and on the header unread-count badge (main holds <code>unreadCount</code>).</li>
+          <li><strong>Header unread badge</strong>: an 18px circle with the count (<code>9+</code> past 10). Red <code>#c84553</code> while unread, grey "0" at zero, <strong>always visible</strong> (it's the only way into the list). Both fills clear 4.5:1 against white.</li>
           <li><strong>Optimistic badge on read</strong>: to dodge the count API's lag, a read decrements by one immediately; the next poll reconciles.</li>
           <li><strong>Background refresh on new activity</strong>: <code>notifications:new</code> re-renders an open list in the background.</li>
           <li><code>lastNotificationId</code> is persisted to <code>notify-state.json</code> (no re-notify after restart).</li>
@@ -466,8 +468,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.7.1 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.7.1 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.8.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.8.0 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 

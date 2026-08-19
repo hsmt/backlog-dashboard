@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.8.0] - 2026-07-30
+
+### Changed / 変更
+- **EN:** The header's 🔔 bell (with a small overlay badge) is replaced by a **red circle showing the unread count itself**. 18px circle, exact number for 1–9 and `9+` past 10 so it stays round; digits use `tabular-nums` so the width doesn't jitter. At zero it stays in place as a **grey "0"** rather than hiding — this button is the only way into the notifications list. Tooltip reads `Notifications (N unread)`. Added dedicated `--unread` / `--zero` fill tokens: both clear 4.5:1 against their white label, and they're kept separate from `--danger` (a *text* color elsewhere, which would lose dark-mode contrast if darkened to match).
+- **JA:** ヘッダーの 🔔 ベル（＋小さなオーバーレイバッジ）を、**未読件数そのものを表示する赤い丸**に置き換えました。18px の円で、1〜9 は実数・10 件以上は `9+` として円形を保ち、数字は `tabular-nums` で桁が揺れません。0 件のときは非表示にせず**グレーの「0」**として同じ位置に残します（このボタンが通知一覧への唯一の入り口のため）。ツールチップは `Notifications (N unread)`。塗り円専用の `--unread` / `--zero` トークンを追加し、いずれも白文字に対し 4.5:1 以上を確保しています（テキスト色として使う `--danger` とは分離。`--danger` を暗くするとダークモードの文字用途が劣化するため）。
+
+---
+
 ## [0.7.1] - 2026-07-29
 
 ### Changed / 変更

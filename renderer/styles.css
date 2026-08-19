@@ -8,6 +8,11 @@
   --accent-ink: #ffffff;
   --danger: #d1495b;
   --warn: #e07b39;
+  /* Filled notification circle. Kept separate from --danger, which is used as a
+     *text* color elsewhere and would lose dark-mode contrast if darkened. These
+     are solid chip backgrounds carrying small white text, so both clear 4.5:1. */
+  --unread: #c84553;
+  --zero: #6b7280;
   --radius: 10px;
   --shadow: 0 1px 2px rgba(0,0,0,.06);
 }
@@ -15,6 +20,7 @@
   :root {
     --bg: #1e2128; --panel: #262a33; --border: #343a45;
     --text: #e6e8ec; --muted: #9aa1ad; --shadow: 0 1px 2px rgba(0,0,0,.3);
+    --zero: #565d6b; /* --muted is too light here for white text (2.6:1) */
   }
 }
 
@@ -44,13 +50,18 @@ body {
   display: inline-flex; align-items: center; justify-content: center;
 }
 .icon-btn:hover { background: var(--panel); }
-.icon-btn { position: relative; }
-.notif-badge {
-  position: absolute; top: 1px; right: 0;
-  min-width: 15px; height: 15px; padding: 0 3px; box-sizing: border-box;
-  background: var(--danger); color: #fff; border-radius: 999px;
-  font-size: 10px; line-height: 15px; font-weight: 700; text-align: center;
+/* Notification control: the unread count itself is the button's face (no bell).
+   Red while unread, muted grey at zero — the button stays put either way so it
+   remains the (only) way into the notifications list. */
+.notif-count {
+  min-width: 18px; height: 18px; padding: 0 4px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: var(--unread); color: #fff;
+  font-size: 10px; font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums; /* digits don't jiggle as the count changes */
 }
+.notif-count.zero { background: var(--zero); }
 .hidden { display: none !important; }
 
 main {

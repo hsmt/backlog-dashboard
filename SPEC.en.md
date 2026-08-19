@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.7.1
-- Last updated: 2026-07-29
+- Version: 0.8.0
+- Last updated: 2026-07-30
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -31,7 +31,7 @@ Build-time requirements: Node.js (v18+ for global `fetch`), macOS `iconutil` and
 
 ## 3. Screens
 
-Common header: `‹ Back` / title / `🔔 Notifications (unread badge)` / `+ New` / `⟳ Refresh` / `⚙ Settings`.
+Common header: `‹ Back` / title / **unread-count badge** (opens notifications) / `+ New` / `⟳ Refresh` / `⚙ Settings`.
 The window **hides** (is not destroyed) on losing focus or on pressing the close button.
 
 ### 3.1 Task list (Tasks)
@@ -77,7 +77,12 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - **New-item detection**: notifications with an ID greater than the stored `lastNotificationId` and still unread are treated as new and shown as native macOS notifications.
 - **On first launch**, only the current max ID is stored as a baseline — no notifications are fired (prevents startup spam).
 - Notification title = "sender + reason", body = "issue key + summary". **Clicking opens the issue on Backlog's web page** (`https://<space>/view/<issue-key>`) in the browser (notifications without an issue open the space's home page). The app's popover is not opened.
-- The **unread count** from `/notifications/count?alreadyRead=false` is reflected in the menu-bar icon title and the header bell badge. The main process keeps the latest count (`unreadCount`) as its source of truth.
+- The **unread count** from `/notifications/count?alreadyRead=false` is reflected in the menu-bar icon title and the header unread-count badge. The main process keeps the latest count (`unreadCount`) as its source of truth.
+- **Header unread-count badge** (the only entry point to the notifications list):
+  - An **18px circle** showing the count. 1–9 exact, **`9+` for 10 or more** (keeps the circle round). Digits use `tabular-nums` so the width doesn't jitter.
+  - **Red while unread** (`--unread` `#c84553`) / **grey "0" at zero** (`--zero`: `#6b7280` light, `#565d6b` dark), and it is **always visible** — hiding it would leave no way to open the notifications list.
+  - Both fills are dedicated tokens meeting 4.5:1 against the `#fff` label. They're kept separate from `--danger`, which is used as a *text* color elsewhere and would lose dark-mode contrast if darkened to match.
+  - Tooltip reads `Notifications (N unread)` when unread, `Notifications` at zero.
 - **Badge update on read is optimistic**: Backlog's unread-count endpoint can return a stale value right after `markAsRead`, so a read action decrements the main-side count by one immediately (updating both badges) and the next scheduled poll reconciles the exact value.
 - **Background refresh on new activity**: when new items are detected, the main process sends `notifications:new` to the renderer, which re-renders the notifications list in the background if it's open.
 - `lastNotificationId` is persisted to `notify-state.json` (prevents re-notifying after a restart).

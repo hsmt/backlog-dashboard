@@ -24,7 +24,7 @@ A personal, menu-bar-resident Backlog task dashboard for Mac.
 - **Filtering** — by project, and by task name (substring, incremental)
 - **Issue detail** — selecting a task shows its description and comment history, with inline **comment posting** and **status changes**. Comments can `@`-mention project members to send Backlog **notifications (お知らせ)**
 - **Quick-add form** — pick a project and summary from the menu bar's `+` to file a task fast. The project picker is **recently-used-first** (your most recent picks lead a `Recent` group). You can also pick an **assignee**, with a `Myself` button for one-click self-assignment
-- **Notifications** — receive new activity as native macOS notifications, with the unread count shown in the menu bar. In the notifications list, each row's `Mark read` clears it individually (the badge drops immediately); an open list **refreshes in the background** when new activity arrives; reopening or returning from detail **paints instantly from cache** (and revalidates quietly)
+- **Notifications** — receive new activity as native macOS notifications, with the unread count shown in the menu bar. The header carries a **red circle with the unread count** (`9+` past 10, a grey "0" at zero). In the notifications list, each row's `Mark read` clears it individually (the badge drops immediately); an open list **refreshes in the background** when new activity arrives; reopening or returning from detail **paints instantly from cache** (and revalidates quietly)
 
 ## Setup
 

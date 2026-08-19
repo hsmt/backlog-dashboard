@@ -11,7 +11,7 @@ const addBtn = document.getElementById('addBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const notifBtn = document.getElementById('notifBtn');
-const notifBadge = document.getElementById('notifBadge');
+const notifCount = document.getElementById('notifCount');
 
 let spaceDomain = ''; // resolved from saved config at startup
 let stack = ['list']; // simple view stack for back navigation
@@ -573,9 +573,13 @@ function issueKeyOfNotification(n) {
   return null;
 }
 
+// The count is the button's whole face: red with the number while unread, muted
+// grey "0" otherwise. It never hides — this button is the only way into the list.
 function updateBadge(count) {
-  if (count > 0) { notifBadge.textContent = count > 99 ? '99+' : String(count); notifBadge.classList.remove('hidden'); }
-  else notifBadge.classList.add('hidden');
+  const n = Math.max(0, Math.trunc(count) || 0);
+  notifCount.textContent = n > 9 ? '9+' : String(n); // cap keeps the circle round
+  notifCount.classList.toggle('zero', n === 0);
+  notifBtn.title = n > 0 ? `Notifications (${n} unread)` : 'Notifications';
 }
 
 function notifRow(n) {
