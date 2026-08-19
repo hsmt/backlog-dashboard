@@ -1,10 +1,12 @@
 'use strict';
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell, screen, Notification, safeStorage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell, screen, Notification, safeStorage, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { BacklogClient } = require('./backlog');
+const updater = require('./updater');
 
 const POLL_INTERVAL_MS = 60 * 1000; // Backlog notification poll cadence
+const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // GitHub release poll cadence
 
 let tray = null;
 let win = null;
@@ -14,6 +16,9 @@ let lastShownAt = 0; // guards against the spurious blur that fires right after 
 let pollTimer = null;
 let lastNotificationId = 0; // highest notification id we've already handled
 let unreadCount = 0; // last known unread count (source of truth for tray/header badge)
+let availableUpdate = null; // newest release when it's newer than us, else null
+let notifiedUpdateVersion = null; // so a pending update only notifies once
+let updateInProgress = false;
 
 // Single-instance: focus the existing window instead of launching a duplicate.
 if (!app.requestSingleInstanceLock()) {
@@ -152,6 +157,74 @@ function startPolling() {
   pollTimer = setInterval(pollNotifications, POLL_INTERVAL_MS);
 }
 
+// --- app updates -----------------------------------------------------------
+// Detection is automatic; installing is not. The swap replaces the app and
+// restarts it, so it always waits for an explicit confirmation rather than
+// yanking the app away mid-task.
+function showUpdateNotification(u) {
+  if (!Notification.isSupported()) return;
+  const notif = new Notification({
+    title: `Update available — v${u.version}`,
+    body: 'Click to install it and restart.',
+  });
+  notif.on('click', () => runUpdate());
+  notif.show();
+}
+
+async function checkForUpdates() {
+  if (!updater.canSelfUpdate() || updateInProgress) return;
+  try {
+    const u = await updater.checkForUpdate();
+    if (!u) return; // already current
+    availableUpdate = u; // surfaced in the tray menu until it's installed
+    if (notifiedUpdateVersion !== u.version) {
+      notifiedUpdateVersion = u.version;
+      showUpdateNotification(u);
+    }
+  } catch { /* offline or API hiccup — quietly retry on the next tick */ }
+}
+
+async function runUpdate() {
+  if (updateInProgress || !availableUpdate) return;
+  const u = availableUpdate;
+  const mb = Math.round((u.size || 0) / 1024 / 1024);
+  const { response } = await dialog.showMessageBox({
+    type: 'question',
+    buttons: ['Update and Restart', 'Later'],
+    defaultId: 0,
+    cancelId: 1,
+    message: `Update to v${u.version}?`,
+    detail: `Backlog Dashboard will download the update (${mb} MB), verify its checksum, then replace itself and restart.`,
+  });
+  if (response !== 0) return;
+
+  updateInProgress = true;
+  if (tray && !tray.isDestroyed()) tray.setToolTip('Backlog Dashboard — updating…');
+  try {
+    const staged = await updater.downloadAndStage(u);
+    updater.applyUpdate(staged); // hands off to the swap script and quits
+  } catch (e) {
+    updateInProgress = false;
+    if (tray && !tray.isDestroyed()) tray.setToolTip('Backlog Dashboard');
+    // Nothing was replaced — offer the manual path rather than leaving a dead end.
+    const { response: r } = await dialog.showMessageBox({
+      type: 'error',
+      buttons: ['Open Release Page', 'Close'],
+      defaultId: 0,
+      cancelId: 1,
+      message: 'Update failed',
+      detail: `${e.message || e}\n\nYour installed version is untouched. You can install the update manually instead.`,
+    });
+    if (r === 0) shell.openExternal(u.pageUrl);
+  }
+}
+
+function startUpdateChecks() {
+  if (!updater.canSelfUpdate()) return; // running from source: nothing to replace
+  checkForUpdates();
+  setInterval(checkForUpdates, UPDATE_CHECK_INTERVAL_MS);
+}
+
 // Requests need a live client; surface a clear error to the renderer otherwise.
 function requireClient() {
   if (!client) {
@@ -256,13 +329,20 @@ function createTray() {
   tray.setToolTip('Backlog Dashboard');
   tray.on('click', toggleWindow);
   tray.on('right-click', () => {
-    const menu = Menu.buildFromTemplate([
+    const items = [
       { label: 'Open', click: toggleWindow },
       { label: 'Refresh', click: () => win && !win.isDestroyed() && win.webContents.send('tasks:refresh') },
-      { type: 'separator' },
-      { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } },
-    ]);
-    tray.popUpContextMenu(menu);
+    ];
+    // A pending update stays reachable here even if the notification was missed.
+    if (availableUpdate) {
+      items.push({ type: 'separator' }, {
+        label: updateInProgress ? 'Updating…' : `Update to v${availableUpdate.version}…`,
+        enabled: !updateInProgress,
+        click: () => runUpdate(),
+      });
+    }
+    items.push({ type: 'separator' }, { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } });
+    tray.popUpContextMenu(Menu.buildFromTemplate(items));
   });
 }
 
@@ -274,6 +354,7 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
   startPolling();
+  startUpdateChecks();
   // First run (no API key): pop the window open so setup is discoverable.
   if (!cfg.apiKey) win.once('ready-to-show', () => showWindow());
 });

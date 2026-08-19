@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.8.0
-- Last updated: 2026-07-30
+- Version: 0.9.0
+- Last updated: 2026-07-31
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -115,6 +115,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 | `main.js` | Main process (tray, window, IPC, config, notification polling) |
 | `preload.js` | Exposes a safe API to the renderer via contextBridge |
 | `backlog.js` | Backlog REST API v2 client |
+| `updater.js` | Self-update (GitHub release check, verification, bundle swap) |
 | `renderer/index.html` `styles.css` `app.js` | UI (views, state, rendering) |
 | `pnglib.js` | Dependency-free PNG encoder |
 | `make-backlog-icon.js` | Generates tray/app icons (`.icns`) from the Backlog "b" |
@@ -183,6 +184,36 @@ Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:upda
 - On first launch on another Mac, remove the quarantine attribute:
   `xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app`
 
+### Self-update (`updater.js`)
+
+**Electron's built-in `autoUpdater` (Squirrel.Mac) cannot be used here.** An ad-hoc signature's designated
+requirement is pinned to that build's cdhash (measured: `designated => cdhash H"633d…"`). Squirrel validates an
+update against the running app's requirement, so any new build — which necessarily has a different cdhash — fails
+that check. Developer ID signing would give a team-ID-based requirement that is stable across builds, enabling the
+standard updater (see §10). Until then the swap is done in-house.
+
+- **Detection**: on launch and every **6 hours** (`UPDATE_CHECK_INTERVAL_MS`),
+  `GET https://api.github.com/repos/hsmt/backlog-dashboard/releases/latest`. The repo is public, so no auth is
+  needed. The tag (minus `v`) is compared numerically against `app.getVersion()`; only a **strictly newer** version
+  counts.
+- **Surfacing**: one native macOS notification per version, plus a persistent `Update to vX.Y.Z…` item in the tray
+  menu so a missed notification is still reachable.
+- **Applied only after explicit confirmation**: the swap quits and restarts the app, so it asks first. Everything
+  after that (download through relaunch) is hands-off.
+- **Integrity**: the download's SHA-256 is checked against the asset `digest` (`sha256:…`) from the GitHub API.
+  A release **without a digest is refused** rather than installed unverified, and the download host must be
+  `https://github.com` (the checksum comes from that same response, so host pinning is defence in depth against a
+  forged one). After mounting, the bundle's
+  `CFBundleShortVersionString` is also checked so the DMG really contains a newer build.
+- **The swap**: a running app can't replace its own bundle, so it's delegated to a detached shell script. The script
+  waits for the old process to exit (up to 10s), **backs up the existing bundle**, `ditto`s the new one in, strips
+  `com.apple.quarantine`, and relaunches. Paths are passed as arguments rather than interpolated into the script,
+  since bash expands `$(…)` and backticks even inside double quotes. **If the copy fails, the backup is restored**, so a partial failure can't
+  leave the user with no app. The script lives outside the work directory it deletes (a running script must not
+  delete itself).
+- **Disabled when**: `app.isPackaged` is false (`npm start` — there's no `.app` to replace), the platform isn't
+  macOS, or the bundle's parent directory isn't writable. In those cases no check runs at all.
+
 ---
 
 ## 9. Known limitations / not supported
@@ -201,6 +232,7 @@ Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:upda
 
 - Slack integration (pull in your mentions / unreads)
 - Universal build (Intel support)
-- Developer ID signing + notarization (smoother distribution)
+- Developer ID signing + notarization (smoother distribution, and it would unlock Squirrel.Mac's standard
+  auto-update, replacing `updater.js`'s in-house swap)
 - Auto-registration as a login item
 - Pagination / full-status support

@@ -6,6 +6,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.9.0] - 2026-07-31
+
+### Added / 追加
+- **EN:** **Self-update.** The app now checks GitHub for a newer release on launch and every 6 hours, announces it once via a native notification, and keeps an `Update to vX.Y.Z…` item in the tray menu. Confirming it downloads the DMG, **verifies its SHA-256 against the digest published by the GitHub API** (a release without a digest is refused rather than installed unverified), checks the mounted bundle's version, then replaces the installed app and relaunches. The swap **backs up the existing bundle and restores it if the copy fails**, so a partial failure can't leave you without an app. Installing always waits for explicit confirmation, since it quits and restarts the app. Self-update is skipped entirely when running from source (`npm start`).
+- **JA:** **自動アップデート**を追加しました。起動時と 6 時間ごとに GitHub の最新リリースを確認し、macOS 通知で 1 度だけ知らせ、トレイメニューに `Update to vX.Y.Z…` を常設します。承諾すると DMG をダウンロードし、**GitHub API が公開する digest と SHA-256 を照合**（digest の無いリリースは未検証でインストールせず拒否）、マウントしたバンドルのバージョンも確認したうえで、インストール済みアプリを置き換えて再起動します。置き換えは**元のバンドルをバックアップし、コピーに失敗したら復元**するため、中途半端な失敗でアプリが消えることはありません。終了・再起動を伴うため、適用は常に明示的な確認後です。ソースから実行（`npm start`）している場合は自動更新を行いません。
+
+### Notes / 補足
+- **EN:** Electron's built-in `autoUpdater` (Squirrel.Mac) can't be used while the app is ad-hoc signed: the signature's designated requirement is pinned to that build's cdhash, so every update would fail Squirrel's validation. Adopting Developer ID signing would make the requirement build-stable and let the standard updater replace this in-house swap.
+- **JA:** ad-hoc 署名のままでは Electron 標準の `autoUpdater`（Squirrel.Mac）は利用できません。署名の指定要件がそのビルド固有の cdhash に固定されるため、更新は必ず Squirrel の検証に失敗します。Developer ID 署名を導入すれば要件がビルドをまたいで安定し、標準の自動更新でこの自前実装を置き換えられます。
+
+---
+
 ## [0.8.0] - 2026-07-30
 
 ### Changed / 変更

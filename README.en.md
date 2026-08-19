@@ -17,6 +17,8 @@ A personal, menu-bar-resident Backlog task dashboard for Mac.
 3. **The app is unsigned, so Gatekeeper will warn on first launch.** In `Applications`, **right-click `Backlog Dashboard.app` → Open** (or allow it under System Settings > Privacy & Security)
 4. On launch, a Backlog "b" icon appears in the menu bar and the settings screen opens — follow "Setup" below to enter your space domain and API key
 
+Once installed, **the app detects and announces later updates itself** — no need to download again by hand (confirm, and it replaces itself and relaunches).
+
 ## Features
 
 - **Open task list** — shows your assigned open issues (click the menu-bar icon to open the popover). Status badges mirror **Backlog's own status colors**
@@ -24,6 +26,7 @@ A personal, menu-bar-resident Backlog task dashboard for Mac.
 - **Filtering** — by project, and by task name (substring, incremental)
 - **Issue detail** — selecting a task shows its description and comment history, with inline **comment posting** and **status changes**. Comments can `@`-mention project members to send Backlog **notifications (お知らせ)**
 - **Quick-add form** — pick a project and summary from the menu bar's `+` to file a task fast. The project picker is **recently-used-first** (your most recent picks lead a `Recent` group). You can also pick an **assignee**, with a `Myself` button for one-click self-assignment
+- **Self-update** — new releases are detected automatically and announced. Confirm, and the app downloads, verifies the checksum, replaces itself and relaunches (it restores the previous version if anything fails, so it can't break your install)
 - **Notifications** — receive new activity as native macOS notifications, with the unread count shown in the menu bar. The header carries a **red circle with the unread count** (`9+` past 10, a grey "0" at zero). In the notifications list, each row's `Mark read` clears it individually (the badge drops immediately); an open list **refreshes in the background** when new activity arrives; reopening or returning from detail **paints instantly from cache** (and revalidates quietly)
 
 ## Setup

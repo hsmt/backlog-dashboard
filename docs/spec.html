@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.8.0</span>
+    <span class="chip">v0.9.0</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.8.0）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.8.0).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.9.0）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.9.0).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-30</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-31</code>
         </div>
       </div>
 
@@ -343,6 +343,7 @@
               <tr><td class="k">main.js</td><td><span class="l-ja">メインプロセス（トレイ・ウィンドウ・IPC・設定・通知ポーリング）</span><span class="l-en">Main process (tray, window, IPC, config, notification polling)</span></td></tr>
               <tr><td class="k">preload.js</td><td><span class="l-ja">contextBridge によるレンダラー向け API 公開</span><span class="l-en">Exposes a safe API to the renderer via contextBridge</span></td></tr>
               <tr><td class="k">backlog.js</td><td><span class="l-ja">Backlog REST API v2 クライアント</span><span class="l-en">Backlog REST API v2 client</span></td></tr>
+              <tr><td class="k">updater.js</td><td><span class="l-ja">自動アップデート（リリース確認・検証・自己置換）</span><span class="l-en">Self-update (release check, verification, bundle swap)</span></td></tr>
               <tr><td class="k">renderer/*</td><td><span class="l-ja">UI（index.html / styles.css / app.js）</span><span class="l-en">UI (index.html / styles.css / app.js)</span></td></tr>
               <tr><td class="k">pnglib.js</td><td><span class="l-ja">依存なし PNG エンコーダ</span><span class="l-en">Dependency-free PNG encoder</span></td></tr>
               <tr><td class="k">make-backlog-icon.js</td><td><span class="l-ja">Backlog「b」からトレイ／アプリアイコン（.icns）生成</span><span class="l-en">Generates tray/app icons (.icns) from the Backlog "b"</span></td></tr>
@@ -423,6 +424,28 @@
           <span class="l-ja"><strong>署名は ad-hoc のみ</strong>（Developer ID・公証なし）。<code>npm run package</code> がパッケージング後に <code>codesign --sign - --identifier com.masanorihashimoto.backlogdashboard</code> を実行し、独自のバンドルIDを明示的に付与する（省くと Electron 本体標準の汎用識別子のままになり、通知許可などアプリ単位の権限が正しく機能しない）。他 Mac での初回起動時は quarantine 属性を削除:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
           <span class="l-en"><strong>Ad-hoc signing only</strong> (no Developer ID / notarization). <code>npm run package</code> runs <code>codesign --sign - --identifier com.masanorihashimoto.backlogdashboard</code> after packaging to stamp the app's own bundle id onto the signature (skipping this leaves Electron's generic signature identifier, breaking per-app permissions like notifications). On first launch on another Mac, remove the quarantine attribute:<br><code>xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app</code></span>
         </div>
+
+        <h3><span class="l-ja">自動アップデート（updater.js）</span><span class="l-en">Self-update (updater.js)</span></h3>
+        <div class="note">
+          <span class="l-ja"><strong>Electron 標準の <code>autoUpdater</code>（Squirrel.Mac）は使えない。</strong> ad-hoc 署名は指定要件がビルド固有の cdhash に固定される（実測: <code>designated =&gt; cdhash H"633d…"</code>）。Squirrel は更新前に実行中アプリの要件で検証するため、cdhash が変わる更新は必ず失敗する。Developer ID 署名ならチーム ID ベースの安定した要件になり標準の更新が使える。</span>
+          <span class="l-en"><strong>Electron's built-in <code>autoUpdater</code> (Squirrel.Mac) can't be used.</strong> An ad-hoc signature's designated requirement is pinned to that build's cdhash (measured: <code>designated =&gt; cdhash H"633d…"</code>). Squirrel validates updates against the running app's requirement, so any new build fails. Developer ID signing would give a build-stable, team-ID-based requirement.</span>
+        </div>
+        <div class="l-ja"><ul>
+          <li><strong>検知</strong>: 起動時＋<strong>6 時間ごと</strong>に GitHub の latest release を確認（公開リポジトリのため認証不要）。<strong>厳密に新しいときのみ</strong>対象。</li>
+          <li><strong>通知</strong>: macOS 通知を 1 バージョンにつき 1 回＋トレイメニューに <code>Update to vX.Y.Z…</code> を常設。</li>
+          <li><strong>適用は確認後</strong>: 置き換えは終了・再起動を伴うため承諾を得てから。以降は全自動。</li>
+          <li><strong>検証</strong>: GitHub API の <code>digest</code>（<code>sha256:…</code>）と照合。<strong>digest が無いリリースは拒否</strong>。マウント後に <code>CFBundleShortVersionString</code> も照合。</li>
+          <li><strong>置き換え</strong>: 切り離した shell に委譲。旧プロセス終了を待ち、<strong>バックアップしてから</strong> <code>ditto</code>、quarantine 除去、再起動。<strong>失敗時はバックアップを復元</strong>するのでアプリが消えない。</li>
+          <li><strong>無効になる条件</strong>: <code>npm start</code> 実行時（置き換える <code>.app</code> が無い）、macOS 以外、書き込み権限が無い場合。</li>
+        </ul></div>
+        <div class="l-en"><ul>
+          <li><strong>Detection</strong>: on launch and every <strong>6 hours</strong>, checks GitHub's latest release (public repo, no auth). Only a <strong>strictly newer</strong> version counts.</li>
+          <li><strong>Surfacing</strong>: one macOS notification per version, plus a persistent <code>Update to vX.Y.Z…</code> tray item.</li>
+          <li><strong>Applied after confirmation</strong>: the swap quits and restarts the app, so it asks first; everything after is hands-off.</li>
+          <li><strong>Verification</strong>: SHA-256 checked against the API's <code>digest</code>. A release <strong>without a digest is refused</strong>. The mounted bundle's <code>CFBundleShortVersionString</code> is checked too.</li>
+          <li><strong>The swap</strong>: delegated to a detached shell script — waits for exit, <strong>backs up</strong>, <code>ditto</code>s, strips quarantine, relaunches. <strong>Restores the backup if the copy fails</strong>, so no bricked install.</li>
+          <li><strong>Disabled when</strong>: running via <code>npm start</code> (no <code>.app</code>), non-macOS, or the install dir isn't writable.</li>
+        </ul></div>
       </section>
 
       <section id="s9">
@@ -452,14 +475,14 @@
         <div class="l-ja"><ul>
           <li>Slack 連携（自分宛メンション・未読の取り込み）</li>
           <li>ユニバーサルビルド（Intel 対応）</li>
-          <li>Developer ID 署名＋公証（配布の摩擦解消）</li>
+          <li>Developer ID 署名＋公証（配布の摩擦解消。標準の自動更新が使えるようになり自前の置き換えを不要にできる）</li>
           <li>ログイン項目への自動登録</li>
           <li>ページング／全ステータス対応の強化</li>
         </ul></div>
         <div class="l-en"><ul>
           <li>Slack integration (pull in your mentions / unreads)</li>
           <li>Universal build (Intel support)</li>
-          <li>Developer ID signing + notarization (smoother distribution)</li>
+          <li>Developer ID signing + notarization (smoother distribution; unlocks the standard auto-updater)</li>
           <li>Auto-registration as a login item</li>
           <li>Pagination / full-status support</li>
         </ul></div>
@@ -468,8 +491,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.8.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.8.0 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.9.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.9.0 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 

@@ -1,7 +1,7 @@
 # Backlog Dashboard 仕様書
 
-- バージョン: 0.8.0
-- 最終更新: 2026-07-30
+- バージョン: 0.9.0
+- 最終更新: 2026-07-31
 - 対象プラットフォーム: macOS（Apple Silicon / arm64）
 
 ---
@@ -115,6 +115,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 | `main.js` | メインプロセス（トレイ・ウィンドウ・IPC・設定・通知ポーリング） |
 | `preload.js` | contextBridge によるレンダラー向け API 公開 |
 | `backlog.js` | Backlog REST API v2 クライアント |
+| `updater.js` | 自動アップデート（GitHub リリース確認・検証・自己置換） |
 | `renderer/index.html` `styles.css` `app.js` | UI（ビュー・状態・描画） |
 | `pnglib.js` | 依存なし PNG エンコーダ |
 | `make-backlog-icon.js` | Backlog「b」からトレイ／アプリアイコン（`.icns`）生成 |
@@ -182,6 +183,34 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - 他 Mac での初回起動時は quarantine 属性の削除が必要:
   `xattr -dr com.apple.quarantine /Applications/BacklogDashboard.app`
 
+### 自動アップデート（`updater.js`）
+
+**Electron 標準の `autoUpdater`（Squirrel.Mac）は使えない。** ad-hoc 署名のアプリは署名の指定要件が
+そのビルド固有の cdhash に固定される（実測: `designated => cdhash H"633d…"`）。Squirrel は更新前に
+実行中アプリの指定要件で新バージョンを検証するため、ビルドが変わる＝ cdhash が変わる更新は必ず失敗する。
+Developer ID 署名ならチーム ID ベースの安定した要件になり標準の自動更新が使える（10章の候補）。
+そのため置き換えを自前で行う。
+
+- **検知**: 起動時＋**6 時間ごと**（`UPDATE_CHECK_INTERVAL_MS`）に
+  `GET https://api.github.com/repos/hsmt/backlog-dashboard/releases/latest`。公開リポジトリのため認証不要。
+  タグ（`v` 除去）を `app.getVersion()` と数値比較し、**厳密に新しいときのみ**対象とする。
+- **通知**: macOS ネイティブ通知を 1 バージョンにつき 1 回。加えてトレイ右クリックに `Update to vX.Y.Z…` を常設
+  （通知を見逃しても到達できる）。
+- **適用は明示確認後**: 置き換えはアプリを終了・再起動するため、確認ダイアログで承諾を得てから実行する。
+  以降（ダウンロード〜再起動）は全自動。
+- **完全性検証**: GitHub API が返すアセットの `digest`（`sha256:…`）とダウンロード内容の SHA-256 を照合。
+  **digest の無いリリースはインストールを拒否**する。ダウンロード先ホストが `https://github.com` であることも検証する
+  （チェックサムは同じ API 応答由来のため、応答自体が改竄された場合の多層防御）。マウント後は `Info.plist` の
+  `CFBundleShortVersionString` も照合し、実体が本当に新しいことを確認する。
+- **置き換え**: 実行中のアプリは自分の bundle を置き換えられないため、切り離した shell スクリプトへ委譲する。
+  スクリプトは旧プロセスの終了を待ち（最大 10 秒）、**元の bundle をバックアップしてから** `ditto` でコピー、
+  `com.apple.quarantine` を除去して再起動する。パスはスクリプトに埋め込まず引数として渡す（bash はダブルクォート内でも
+  `$(…)` やバッククォートを展開するため）。**コピーに失敗した場合はバックアップを復元**するため、
+  中途半端な失敗でアプリが消えることはない。スクリプトは削除対象の作業ディレクトリの外に置く
+  （実行中のスクリプト自身を消さないため）。
+- **無効になる条件**: `app.isPackaged` が false（`npm start` での起動＝置き換える `.app` が無い）、
+  macOS 以外、bundle の親ディレクトリに書き込み権限が無い場合は、チェック自体を行わない。
+
 ---
 
 ## 9. 既知の制約 / 非対応
@@ -200,6 +229,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 
 - Slack 連携（自分宛メンション・未読の取り込み）
 - ユニバーサルビルド（Intel 対応）
-- Developer ID 署名＋公証（配布の摩擦解消）
+- Developer ID 署名＋公証（配布の摩擦解消。あわせて Squirrel.Mac による標準の自動更新が使えるようになり、
+  `updater.js` の自前置き換えを置き換えられる）
 - ログイン項目への自動登録
 - ページング／全ステータス対応の強化
