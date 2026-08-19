@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('api', {
   // config
   getConfig: () => ipcRenderer.invoke('config:get'),
   setConfig: (cfg) => ipcRenderer.invoke('config:set', cfg),
+  myUserId: () => ipcRenderer.invoke('me:id'),
   // tasks
   myTasks: () => ipcRenderer.invoke('tasks:mine'),
   issueDetail: (issueKey) => ipcRenderer.invoke('issue:detail', issueKey),
@@ -13,6 +14,7 @@ contextBridge.exposeInMainWorld('api', {
   // quick add
   formOptions: () => ipcRenderer.invoke('form:options'),
   issueTypes: (projectId) => ipcRenderer.invoke('form:issueTypes', projectId),
+  projectUsers: (projectId) => ipcRenderer.invoke('form:projectUsers', projectId),
   createIssue: (payload) => ipcRenderer.invoke('issue:create', payload),
   // notifications
   notifications: () => ipcRenderer.invoke('notifications:list'),

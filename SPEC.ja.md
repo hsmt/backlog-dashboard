@@ -1,7 +1,7 @@
 # Backlog Dashboard 仕様書
 
-- バージョン: 0.5.0
-- 最終更新: 2026-07-25
+- バージョン: 0.6.0
+- 最終更新: 2026-07-26
 - 対象プラットフォーム: macOS（Apple Silicon / arm64）
 
 ---
@@ -50,7 +50,8 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - **＠メンション通知（お知らせ）**: コメント本文で `@` を入力（または `@` ボタン）するとプロジェクト参加ユーザーの候補が表示され、選ぶと本文に `@名前` を挿入して通知対象に追加する。通知対象は本文下に**チップ**で表示し、`×` で個別解除できる（チップが通知対象の唯一の情報源で、本文編集では変化しない）。投稿時に `notifiedUserId[]` を送り、指定ユーザーへ Backlog のお知らせが届く。本文中の `@名前` は可読性用のプレーンテキスト（Backlog 上のメンションリンクにはならない）。
 
 ### 3.3 新規タスク（New Task）
-- 入力: プロジェクト（必須）→ 種別（必須・プロジェクト選択後に取得）／件名（必須）／優先度（既定=中）／期限／説明。
+- 入力: プロジェクト（必須）→ 種別（必須・プロジェクト選択後に取得）／件名（必須）／担当者／優先度（既定=中）／期限／説明。
+- **担当者**: プロジェクト選択後に参加ユーザー一覧（名前順）を取得し、既定は「Unassigned」。**「Myself」ボタン**で自分を担当者に設定できる（自分がそのプロジェクトの参加者でない場合はトーストで案内し、選択は変更しない）。
 - **プロジェクト選択は「最近使った順」**: 本フォームから起票したプロジェクトを最新順（最大 5 件）で記録し、次回以降 `Recent` グループの先頭に、残りは `All projects` グループに Backlog の返却順で表示する（履歴が無い場合は従来どおりのフラットな一覧）。現存しないプロジェクト（アーカイブ済み等）の履歴は自動的に無視する。
 - 作成成功でトーストを表示し、一覧へ戻る。
 
@@ -143,17 +144,18 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 | ステータス変更 | `PATCH /issues/:key`（`statusId`, `comment`） |
 | プロジェクト一覧 | `GET /projects?archived=false` |
 | ステータス一覧 | `GET /projects/:id/statuses` |
-| プロジェクト参加者 | `GET /projects/:id/users`（＠メンション候補） |
+| プロジェクト参加者 | `GET /projects/:id/users`（＠メンション候補・新規タスクの担当者候補） |
+| 自分のユーザーID | `GET /users/myself`（キャッシュ、「Myself」ボタン用） |
 | 種別一覧 | `GET /projects/:id/issueTypes` |
 | 優先度一覧 | `GET /priorities` |
-| 課題作成 | `POST /issues` |
+| 課題作成 | `POST /issues`（`assigneeId` 任意） |
 | 通知一覧 | `GET /notifications?count=100&order=desc` |
 | 未読数 | `GET /notifications/count?alreadyRead=false` |
 | 通知既読 | `POST /notifications/:id/markAsRead` |
 | 全既読 | `POST /notifications/markAsRead` |
 
 ### IPC チャンネル
-`config:get` / `config:set` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`。
+`config:get` / `config:set` / `me:id` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `form:projectUsers` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`。
 メイン→レンダラーのイベント: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new` / `open-issue` / `open-notifications`。
 
 ---

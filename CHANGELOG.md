@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.6.0] - 2026-07-26
+
+### Added / 追加
+- **EN:** The New Task form now has an **Assignee** field. After picking a project, its members are fetched (sorted by name) with "Unassigned" as the default. A **"Myself" button** sets the assignee to you in one click (if you're not a member of that project, it shows a toast and leaves the selection unchanged instead of failing silently).
+- **JA:** 新規タスクフォームに **担当者** 欄を追加しました。プロジェクトを選ぶと参加ユーザー（名前順）を取得し、既定は「Unassigned」です。**「Myself」ボタン**でワンクリックで自分を担当者に設定できます（自分がそのプロジェクトの参加者でない場合はトーストで案内し、選択は変更しません）。
+
+---
+
 ## [0.5.0] - 2026-07-25
 
 ### Added / 追加

@@ -417,6 +417,8 @@ async function renderAdd() {
          h('optgroup', { label: 'All projects' }, ...rest.map(optionFor))]
       : opts.projects.map(optionFor)));
   const typeSel = h('select', { disabled: '' }, h('option', {}, '—'));
+  const assigneeSel = h('select', { disabled: '' }, h('option', { value: '' }, '—'));
+  const myselfBtn = h('button', { class: 'btn secondary', disabled: '', title: 'Assign to me' }, 'Myself');
   const prioSel = h('select', {},
     ...opts.priorities.map((p) => h('option', { value: p.id, ...(p.id === 3 ? { selected: '' } : {}) }, p.name)));
   const summary = h('input', { type: 'text', placeholder: 'Summary' });
@@ -427,12 +429,35 @@ async function renderAdd() {
   projectSel.addEventListener('change', async () => {
     typeSel.replaceChildren(h('option', {}, 'Loading…'));
     typeSel.disabled = true;
+    assigneeSel.replaceChildren(h('option', {}, 'Loading…'));
+    assigneeSel.disabled = true;
+    myselfBtn.disabled = true;
     if (!projectSel.value) return;
+    const projectId = Number(projectSel.value);
     try {
-      const types = await api.issueTypes(Number(projectSel.value));
+      const types = await api.issueTypes(projectId);
       typeSel.replaceChildren(...types.map((t) => h('option', { value: t.id }, t.name)));
       typeSel.disabled = false;
     } catch (e) { toast('Failed to load issue types: ' + e.message); }
+    try {
+      const users = (await api.projectUsers(projectId)).slice()
+        .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ja'));
+      assigneeSel.replaceChildren(
+        h('option', { value: '' }, 'Unassigned'),
+        ...users.map((u) => h('option', { value: u.id }, u.name)));
+      assigneeSel.disabled = false;
+      myselfBtn.disabled = false;
+    } catch (e) { toast('Failed to load assignees: ' + e.message); }
+  });
+
+  let myId = null; // cached across project changes within this form session
+  myselfBtn.addEventListener('click', async () => {
+    try {
+      if (myId == null) myId = await api.myUserId();
+      const has = [...assigneeSel.options].some((o) => o.value === String(myId));
+      if (!has) return toast("You're not a member of this project");
+      assigneeSel.value = String(myId);
+    } catch (e) { toast('Failed: ' + e.message); }
   });
 
   submit.addEventListener('click', async () => {
@@ -448,6 +473,7 @@ async function renderAdd() {
         summary: summary.value.trim(),
         description: desc.value.trim() || undefined,
         dueDate: due.value || undefined,
+        assigneeId: assigneeSel.value ? Number(assigneeSel.value) : undefined,
       });
       recordRecentProject(Number(projectSel.value));
       toast(`Created: ${issue.issueKey}`);
@@ -459,6 +485,8 @@ async function renderAdd() {
     h('label', {}, 'Project *'), projectSel,
     h('label', {}, 'Issue type *'), typeSel,
     h('label', {}, 'Summary *'), summary,
+    h('label', {}, 'Assignee'),
+    h('div', { style: 'display:flex; gap:8px' }, assigneeSel, myselfBtn),
     h('label', {}, 'Priority'), prioSel,
     h('label', {}, 'Due date'), due,
     h('label', {}, 'Description'), desc,

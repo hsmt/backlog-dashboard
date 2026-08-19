@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.5.0</span>
+    <span class="chip">v0.6.0</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.5.0）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.5.0).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.6.0）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.6.0).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-25</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-26</code>
         </div>
       </div>
 
@@ -241,12 +241,14 @@
               <li>プロジェクト（必須）→ 種別（必須）／件名（必須）。</li>
               <li>優先度（既定=中）／期限／説明。</li>
               <li>プロジェクトは「最近使った順」— 起票実績を最新順（最大 5 件）で <code>Recent</code> グループの先頭に、残りは <code>All projects</code> に表示。</li>
+              <li><strong>担当者</strong>: プロジェクト選択後に参加ユーザーを取得（既定=Unassigned）。<code>Myself</code> ボタンで自分を担当者に設定。</li>
               <li>作成成功でトースト表示 → 一覧へ戻る。</li>
             </ul></div>
             <div class="l-en"><ul>
               <li>Project (required) → issue type (required) / summary (required).</li>
               <li>Priority (default: Normal) / due date / description.</li>
               <li>Project picker is "recently used first" — up to 5 most-recent under a <code>Recent</code> group, the rest under <code>All projects</code>.</li>
+              <li><strong>Assignee</strong>: fetches project members after picking a project (defaults to Unassigned). A <code>Myself</code> button assigns it to you.</li>
               <li>Toast on success → returns to the list.</li>
             </ul></div>
           </div>
@@ -383,7 +385,8 @@
               <tr><td><span class="l-ja">ステータス変更</span><span class="l-en">Change status</span></td><td><code><span class="method">PATCH</span> /issues/:key</code></td></tr>
               <tr><td><span class="l-ja">プロジェクト／種別／優先度</span><span class="l-en">Projects / types / priorities</span></td><td><code><span class="method">GET</span> /projects · /projects/:id/statuses · /projects/:id/issueTypes · /priorities</code></td></tr>
               <tr><td><span class="l-ja">プロジェクト参加者</span><span class="l-en">Project members</span></td><td><code><span class="method">GET</span> /projects/:id/users</code></td></tr>
-              <tr><td><span class="l-ja">課題作成</span><span class="l-en">Create issue</span></td><td><code><span class="method">POST</span> /issues</code></td></tr>
+              <tr><td><span class="l-ja">自分のユーザーID</span><span class="l-en">My user id</span></td><td><code><span class="method">GET</span> /users/myself</code></td></tr>
+              <tr><td><span class="l-ja">課題作成</span><span class="l-en">Create issue</span></td><td><code><span class="method">POST</span> /issues (assigneeId optional)</code></td></tr>
               <tr><td><span class="l-ja">通知一覧 / 未読数</span><span class="l-en">Notifications / unread</span></td><td><code><span class="method">GET</span> /notifications · /notifications/count?alreadyRead=false</code></td></tr>
               <tr><td><span class="l-ja">既読 / 全既読</span><span class="l-en">Mark read / all</span></td><td><code><span class="method">POST</span> /notifications/:id/markAsRead · /notifications/markAsRead</code></td></tr>
             </tbody>
@@ -391,7 +394,7 @@
         </div>
         <h3><span class="l-ja">IPC チャンネル</span><span class="l-en">IPC channels</span></h3>
         <div class="chips">
-          <code>config:get</code><code>config:set</code><code>tasks:mine</code><code>issue:detail</code><code>issue:comment</code><code>issue:status</code><code>form:options</code><code>form:issueTypes</code><code>issue:create</code><code>notifications:list</code><code>notifications:markRead</code><code>notifications:markAllRead</code><code>notifications:unread</code><code>open:external</code><code>space:domain</code>
+          <code>config:get</code><code>config:set</code><code>me:id</code><code>tasks:mine</code><code>issue:detail</code><code>issue:comment</code><code>issue:status</code><code>form:options</code><code>form:issueTypes</code><code>form:projectUsers</code><code>issue:create</code><code>notifications:list</code><code>notifications:markRead</code><code>notifications:markAllRead</code><code>notifications:unread</code><code>open:external</code><code>space:domain</code>
         </div>
         <p style="font-size:13px;color:var(--muted);margin-top:8px">
           <span class="l-ja">メイン→レンダラーのイベント: </span><span class="l-en">Main → renderer events: </span>
@@ -463,8 +466,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.5.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.5.0 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.6.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.6.0 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 

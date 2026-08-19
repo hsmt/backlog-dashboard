@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.5.0
-- Last updated: 2026-07-25
+- Version: 0.6.0
+- Last updated: 2026-07-26
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -50,7 +50,8 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - **@mention notifications (お知らせ)**: typing `@` in the comment body (or the `@` button) shows project members; picking one inserts `@Name` into the text and adds the user to the notify set. The notify set is shown as removable **chips** below the box and is the single source of truth (editing the text never changes it). On post, `notifiedUserId[]` is sent so Backlog notifies those users. The `@Name` in the body is plain readable text (not a clickable Backlog mention link).
 
 ### 3.3 New Task
-- Inputs: project (required) → issue type (required; fetched after project selection) / summary (required) / priority (default: Normal) / due date / description.
+- Inputs: project (required) → issue type (required; fetched after project selection) / summary (required) / assignee / priority (default: Normal) / due date / description.
+- **Assignee**: after picking a project, fetches its members (sorted by name); defaults to "Unassigned". A **"Myself" button** sets the assignee to you (if you're not a member of that project, it shows a toast and leaves the selection unchanged).
 - **Project picker is ordered "recently used first"**: projects you've created issues in from this form are remembered most-recent-first (up to 5) and surfaced at the top under a `Recent` group, with the rest under `All projects` in Backlog's original order (a flat list when there's no history). History entries for projects that no longer exist (e.g. archived) are ignored automatically.
 - On success, shows a toast and returns to the list.
 
@@ -143,17 +144,18 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 | Change status | `PATCH /issues/:key` (`statusId`, `comment`) |
 | Projects | `GET /projects?archived=false` |
 | Statuses | `GET /projects/:id/statuses` |
-| Project members | `GET /projects/:id/users` (@mention candidates) |
+| Project members | `GET /projects/:id/users` (@mention candidates; also assignee candidates for New Task) |
+| My user id | `GET /users/myself` (cached; powers the "Myself" button) |
 | Issue types | `GET /projects/:id/issueTypes` |
 | Priorities | `GET /priorities` |
-| Create issue | `POST /issues` |
+| Create issue | `POST /issues` (`assigneeId` optional) |
 | Notifications | `GET /notifications?count=100&order=desc` |
 | Unread count | `GET /notifications/count?alreadyRead=false` |
 | Mark read | `POST /notifications/:id/markAsRead` |
 | Mark all read | `POST /notifications/markAsRead` |
 
 ### IPC channels
-`config:get` / `config:set` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`.
+`config:get` / `config:set` / `me:id` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `form:projectUsers` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`.
 Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new` / `open-issue` / `open-notifications`.
 
 ---

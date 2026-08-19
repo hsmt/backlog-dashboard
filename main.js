@@ -297,6 +297,11 @@ ipcMain.handle('config:set', async (_e, { spaceDomain, apiKey }) => {
   return { ok: true };
 });
 
+ipcMain.handle('me:id', async () => {
+  requireClient();
+  return getUserId();
+});
+
 // ---- IPC: tasks ------------------------------------------------------------
 ipcMain.handle('tasks:mine', async () => {
   requireClient();
@@ -338,6 +343,11 @@ ipcMain.handle('form:options', async () => {
 ipcMain.handle('form:issueTypes', async (_e, projectId) => {
   requireClient();
   return client.issueTypes(projectId);
+});
+
+ipcMain.handle('form:projectUsers', async (_e, projectId) => {
+  requireClient();
+  return client.projectUsers(projectId);
 });
 
 ipcMain.handle('issue:create', async (_e, payload) => {

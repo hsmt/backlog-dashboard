@@ -86,8 +86,8 @@ class BacklogClient {
   issueTypes(projectIdOrKey) { return this.get(`/projects/${projectIdOrKey}/issueTypes`); }
   priorities() { return this.get('/priorities'); }
 
-  createIssue({ projectId, summary, issueTypeId, priorityId, description, dueDate }) {
-    return this.post('/issues', { projectId, summary, issueTypeId, priorityId, description, dueDate });
+  createIssue({ projectId, summary, issueTypeId, priorityId, description, dueDate, assigneeId }) {
+    return this.post('/issues', { projectId, summary, issueTypeId, priorityId, description, dueDate, assigneeId });
   }
 
   // --- Notifications ------------------------------------------------------
