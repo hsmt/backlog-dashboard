@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.4.1</span>
+    <span class="chip">v0.5.0</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.4.1）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.4.1).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.5.0）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.5.0).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-24</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-25</code>
         </div>
       </div>
 
@@ -225,12 +225,14 @@
               <li><strong>ステータス変更</strong>（プロジェクトのステータス一覧から）。</li>
               <li>説明・<strong>コメント一覧</strong>（変更ログ含む）。</li>
               <li><strong>コメント投稿</strong>。更新後は再取得して再描画。</li>
+              <li><strong>＠メンション通知</strong>: <code>@</code> で参加ユーザー候補→選択で通知対象に。チップで管理し <code>notifiedUserId[]</code> でお知らせ送信。</li>
             </ul></div>
             <div class="l-en"><ul>
               <li>Summary, meta, "Open in Backlog ↗".</li>
               <li><strong>Status change</strong> (from the project's status list).</li>
               <li>Description and <strong>comment list</strong> (incl. change log).</li>
               <li><strong>Comment form</strong>. Refetches and re-renders after updates.</li>
+              <li><strong>@mention notify</strong>: <code>@</code> lists members → pick to notify; managed as chips, sent via <code>notifiedUserId[]</code>.</li>
             </ul></div>
           </div>
           <div class="card">
@@ -377,9 +379,10 @@
               <tr><td><span class="l-ja">未完了タスク</span><span class="l-en">Open tasks</span></td><td><code><span class="method">GET</span> /issues?assigneeId[]=&lt;me&gt;&amp;statusId[]=1..3&amp;sort=dueDate&amp;count=100</code></td></tr>
               <tr><td><span class="l-ja">課題取得</span><span class="l-en">Get issue</span></td><td><code><span class="method">GET</span> /issues/:key</code></td></tr>
               <tr><td><span class="l-ja">コメント一覧</span><span class="l-en">Comments</span></td><td><code><span class="method">GET</span> /issues/:key/comments</code></td></tr>
-              <tr><td><span class="l-ja">コメント投稿</span><span class="l-en">Post comment</span></td><td><code><span class="method">POST</span> /issues/:key/comments</code></td></tr>
+              <tr><td><span class="l-ja">コメント投稿</span><span class="l-en">Post comment</span></td><td><code><span class="method">POST</span> /issues/:key/comments (content, notifiedUserId[])</code></td></tr>
               <tr><td><span class="l-ja">ステータス変更</span><span class="l-en">Change status</span></td><td><code><span class="method">PATCH</span> /issues/:key</code></td></tr>
               <tr><td><span class="l-ja">プロジェクト／種別／優先度</span><span class="l-en">Projects / types / priorities</span></td><td><code><span class="method">GET</span> /projects · /projects/:id/statuses · /projects/:id/issueTypes · /priorities</code></td></tr>
+              <tr><td><span class="l-ja">プロジェクト参加者</span><span class="l-en">Project members</span></td><td><code><span class="method">GET</span> /projects/:id/users</code></td></tr>
               <tr><td><span class="l-ja">課題作成</span><span class="l-en">Create issue</span></td><td><code><span class="method">POST</span> /issues</code></td></tr>
               <tr><td><span class="l-ja">通知一覧 / 未読数</span><span class="l-en">Notifications / unread</span></td><td><code><span class="method">GET</span> /notifications · /notifications/count?alreadyRead=false</code></td></tr>
               <tr><td><span class="l-ja">既読 / 全既読</span><span class="l-en">Mark read / all</span></td><td><code><span class="method">POST</span> /notifications/:id/markAsRead · /notifications/markAsRead</code></td></tr>
@@ -458,8 +461,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.4.1 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.4.1 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.5.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.5.0 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 

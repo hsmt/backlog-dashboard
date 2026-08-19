@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('api', {
   // tasks
   myTasks: () => ipcRenderer.invoke('tasks:mine'),
   issueDetail: (issueKey) => ipcRenderer.invoke('issue:detail', issueKey),
-  addComment: (issueKey, content) => ipcRenderer.invoke('issue:comment', { issueKey, content }),
+  addComment: (issueKey, content, notifiedUserIds) => ipcRenderer.invoke('issue:comment', { issueKey, content, notifiedUserIds }),
   setStatus: (issueKey, statusId, comment) => ipcRenderer.invoke('issue:status', { issueKey, statusId, comment }),
   // quick add
   formOptions: () => ipcRenderer.invoke('form:options'),

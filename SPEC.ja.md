@@ -1,7 +1,7 @@
 # Backlog Dashboard 仕様書
 
-- バージョン: 0.4.1
-- 最終更新: 2026-07-24
+- バージョン: 0.5.0
+- 最終更新: 2026-07-25
 - 対象プラットフォーム: macOS（Apple Silicon / arm64）
 
 ---
@@ -47,6 +47,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - **説明** の表示。
 - **コメント一覧**（差出人・日時・本文・変更ログ）。
 - **コメント投稿**フォーム。投稿・ステータス変更後は詳細を再取得して再描画。
+- **＠メンション通知（お知らせ）**: コメント本文で `@` を入力（または `@` ボタン）するとプロジェクト参加ユーザーの候補が表示され、選ぶと本文に `@名前` を挿入して通知対象に追加する。通知対象は本文下に**チップ**で表示し、`×` で個別解除できる（チップが通知対象の唯一の情報源で、本文編集では変化しない）。投稿時に `notifiedUserId[]` を送り、指定ユーザーへ Backlog のお知らせが届く。本文中の `@名前` は可読性用のプレーンテキスト（Backlog 上のメンションリンクにはならない）。
 
 ### 3.3 新規タスク（New Task）
 - 入力: プロジェクト（必須）→ 種別（必須・プロジェクト選択後に取得）／件名（必須）／優先度（既定=中）／期限／説明。
@@ -138,10 +139,11 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 | 未完了タスク | `GET /issues?assigneeId[]=<me>&statusId[]=1..3&sort=dueDate&order=asc&count=100` |
 | 課題取得 | `GET /issues/:key` |
 | コメント一覧 | `GET /issues/:key/comments` |
-| コメント投稿 | `POST /issues/:key/comments` |
+| コメント投稿 | `POST /issues/:key/comments`（`content`, `notifiedUserId[]`） |
 | ステータス変更 | `PATCH /issues/:key`（`statusId`, `comment`） |
 | プロジェクト一覧 | `GET /projects?archived=false` |
 | ステータス一覧 | `GET /projects/:id/statuses` |
+| プロジェクト参加者 | `GET /projects/:id/users`（＠メンション候補） |
 | 種別一覧 | `GET /projects/:id/issueTypes` |
 | 優先度一覧 | `GET /priorities` |
 | 課題作成 | `POST /issues` |

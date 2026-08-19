@@ -213,7 +213,7 @@ function openDetail(issueKey) { go('detail', () => renderDetail(issueKey)); }
 async function renderDetail(issueKey) {
   showLoading();
   try {
-    const { issue, comments, statuses } = await api.issueDetail(issueKey);
+    const { issue, comments, statuses, users } = await api.issueDetail(issueKey);
     clear();
     const wrap = h('div', { class: 'detail' });
     const url = `https://${spaceDomain}/view/${issue.issueKey}`;
@@ -255,18 +255,8 @@ async function renderDetail(issueKey) {
     for (const c of comments) list.append(commentRow(c));
     wrap.append(list);
 
-    // add comment
-    const ta = h('textarea', { placeholder: 'Add a comment…' });
-    const post = h('button', { class: 'btn' }, 'Post');
-    post.addEventListener('click', async () => {
-      const content = ta.value.trim();
-      if (!content) return;
-      post.disabled = true; post.textContent = 'Posting…';
-      try { await api.addComment(issue.issueKey, content); ta.value = ''; toast('Comment added'); renderDetail(issueKey); }
-      catch (e) { post.disabled = false; post.textContent = 'Post'; toast('Failed: ' + e.message); }
-    });
-    wrap.append(h('div', { class: 'section-label' }, 'Add a comment'), ta,
-      h('div', { class: 'btn-row' }, post));
+    // add comment (type @ to notify project members — Backlog "お知らせ")
+    wrap.append(commentComposer(issue, users));
 
     view.append(wrap);
   } catch (e) { showError(e); }
@@ -281,6 +271,107 @@ function commentRow(c) {
       h('span', { class: 'when' }, fmtDateTime(c.created))),
     c.content ? h('div', { class: 'body' }, c.content) : null,
     changes ? h('div', { class: 'change' }, changes) : null,
+  );
+}
+
+// Comment box with @mention: typing "@" (or the @ button) opens a project-member
+// picker; picking inserts "@Name" into the text and adds the user to the notify
+// set. On post we send the ids as `notifiedUserId[]` so Backlog sends お知らせ.
+// The notify set (shown as removable chips) is the source of truth for who gets
+// notified — editing the text never silently changes it.
+function commentComposer(issue, users) {
+  const notified = new Map(); // userId -> user
+  const roster = (users || []).slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ja'));
+
+  const ta = h('textarea', { placeholder: 'Add a comment…  (type @ to notify someone)' });
+  const menu = h('div', { class: 'mention-menu hidden' });
+  const chips = h('div', { class: 'notify-chips hidden' });
+  const post = h('button', { class: 'btn' }, 'Post');
+  const atBtn = h('button', { class: 'btn secondary', title: 'Mention someone' }, '@');
+
+  function renderChips() {
+    chips.replaceChildren();
+    if (!notified.size) { chips.classList.add('hidden'); return; }
+    chips.classList.remove('hidden');
+    chips.append(h('span', { class: 'notify-label' }, 'Notify'));
+    for (const u of notified.values()) {
+      chips.append(h('span', { class: 'notify-chip' }, '@' + u.name,
+        h('button', { class: 'chip-x', title: 'Remove', onclick: () => { notified.delete(u.id); renderChips(); } }, '×')));
+    }
+  }
+
+  function hideMenu() { menu.classList.add('hidden'); menu.replaceChildren(); }
+
+  // The "@query" token immediately left of the caret, or null.
+  function activeMention() {
+    const pos = ta.selectionStart;
+    const before = ta.value.slice(0, pos);
+    const m = before.match(/@([^\s@]*)$/);
+    return m ? { query: m[1], start: pos - m[0].length, pos } : null;
+  }
+
+  function pickUser(u, mention) {
+    const head = ta.value.slice(0, mention.start);
+    const tail = ta.value.slice(mention.pos);
+    const insert = '@' + u.name + ' ';
+    ta.value = head + insert + tail;
+    const caret = head.length + insert.length;
+    ta.setSelectionRange(caret, caret);
+    notified.set(u.id, u);
+    renderChips();
+    hideMenu();
+    ta.focus();
+  }
+
+  function refreshMenu() {
+    if (!roster.length) return hideMenu();
+    const mention = activeMention();
+    if (!mention) return hideMenu();
+    const q = mention.query.toLowerCase();
+    const matches = roster.filter((u) =>
+      !q || (u.name || '').toLowerCase().includes(q) || (u.mailAddress || '').toLowerCase().includes(q)).slice(0, 8);
+    if (!matches.length) return hideMenu();
+    menu.replaceChildren(...matches.map((u) =>
+      h('div', { class: 'mention-item', onmousedown: (e) => { e.preventDefault(); pickUser(u, mention); } },
+        h('span', { class: 'mi-name' }, u.name),
+        u.mailAddress ? h('span', { class: 'mi-mail' }, u.mailAddress) : null)));
+    menu.classList.remove('hidden');
+  }
+
+  ta.addEventListener('input', refreshMenu);
+  ta.addEventListener('click', refreshMenu);
+  ta.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu.classList.contains('hidden')) { e.stopPropagation(); hideMenu(); }
+  });
+  ta.addEventListener('blur', () => setTimeout(hideMenu, 150)); // let an item's mousedown land first
+
+  atBtn.addEventListener('click', () => {
+    const pos = ta.selectionStart;
+    const needsSpace = pos > 0 && !/\s/.test(ta.value[pos - 1]);
+    const ins = (needsSpace ? ' ' : '') + '@';
+    ta.value = ta.value.slice(0, pos) + ins + ta.value.slice(pos);
+    const caret = pos + ins.length;
+    ta.setSelectionRange(caret, caret);
+    ta.focus();
+    refreshMenu();
+  });
+
+  post.addEventListener('click', async () => {
+    const content = ta.value.trim();
+    if (!content) return;
+    post.disabled = true; post.textContent = 'Posting…';
+    try {
+      await api.addComment(issue.issueKey, content, [...notified.keys()]);
+      toast(notified.size ? `Comment added · notified ${notified.size}` : 'Comment added');
+      renderDetail(issue.issueKey);
+    } catch (e) { post.disabled = false; post.textContent = 'Post'; toast('Failed: ' + e.message); }
+  });
+
+  return h('div', {},
+    h('div', { class: 'section-label' }, 'Add a comment'),
+    h('div', { class: 'composer' }, ta, menu),
+    chips,
+    h('div', { class: 'btn-row' }, post, atBtn),
   );
 }
 

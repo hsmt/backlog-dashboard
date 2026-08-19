@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.5.0] - 2026-07-25
+
+### Added / 追加
+- **EN:** **@mention notifications in comments.** Typing `@` in the comment box (or the `@` button) opens a project-member picker; picking a user inserts `@Name` into the text and adds them to a notify set shown as removable chips. On post, the ids are sent as `notifiedUserId[]` so Backlog sends its お知らせ notification to those users. The chips are the source of truth for who gets notified, so editing the text never changes it. (Project members are fetched via `GET /projects/:id/users`; the `@Name` in the body is plain readable text, not a clickable Backlog mention link.)
+- **JA:** **コメントの＠メンション通知（お知らせ）**。コメント欄で `@`（または `@` ボタン）を入力するとプロジェクト参加ユーザーの候補が表示され、選ぶと本文に `@名前` を挿入し、通知対象（削除可能なチップ表示）に追加します。投稿時に `notifiedUserId[]` として送信し、指定ユーザーへ Backlog のお知らせが届きます。通知対象はチップが唯一の情報源で、本文を編集しても変わりません。（候補は `GET /projects/:id/users` で取得。本文中の `@名前` は可読性用のプレーンテキストで、クリック可能な Backlog メンションリンクにはなりません。）
+
+---
+
 ## [0.4.1] - 2026-07-24
 
 ### Fixed / 修正

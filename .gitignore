@@ -11,3 +11,5 @@ notify-state.json
 dist/
 *.log
 .DS_Store
+# local tooling config (Claude Code, per-machine settings)
+.claude/

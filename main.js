@@ -310,13 +310,17 @@ ipcMain.handle('issue:detail', async (_e, issueKey) => {
     client.issue(issueKey),
     client.comments(issueKey),
   ]);
-  const statuses = await client.projectStatuses(issue.projectId).catch(() => []);
-  return { issue, comments, statuses };
+  // Statuses (for the changer) and project members (for @mention targets).
+  const [statuses, users] = await Promise.all([
+    client.projectStatuses(issue.projectId).catch(() => []),
+    client.projectUsers(issue.projectId).catch(() => []),
+  ]);
+  return { issue, comments, statuses, users };
 });
 
-ipcMain.handle('issue:comment', async (_e, { issueKey, content }) => {
+ipcMain.handle('issue:comment', async (_e, { issueKey, content, notifiedUserIds }) => {
   requireClient();
-  return client.addComment(issueKey, content);
+  return client.addComment(issueKey, content, notifiedUserIds);
 });
 
 ipcMain.handle('issue:status', async (_e, { issueKey, statusId, comment }) => {

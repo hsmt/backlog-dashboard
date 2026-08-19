@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.4.1
-- Last updated: 2026-07-24
+- Version: 0.5.0
+- Last updated: 2026-07-25
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -47,6 +47,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - **Description** display.
 - **Comment list** (author, timestamp, body, change log).
 - **Comment form**. After posting or a status change, the detail is refetched and re-rendered.
+- **@mention notifications (お知らせ)**: typing `@` in the comment body (or the `@` button) shows project members; picking one inserts `@Name` into the text and adds the user to the notify set. The notify set is shown as removable **chips** below the box and is the single source of truth (editing the text never changes it). On post, `notifiedUserId[]` is sent so Backlog notifies those users. The `@Name` in the body is plain readable text (not a clickable Backlog mention link).
 
 ### 3.3 New Task
 - Inputs: project (required) → issue type (required; fetched after project selection) / summary (required) / priority (default: Normal) / due date / description.
@@ -138,10 +139,11 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 | Open tasks | `GET /issues?assigneeId[]=<me>&statusId[]=1..3&sort=dueDate&order=asc&count=100` |
 | Get issue | `GET /issues/:key` |
 | Comments | `GET /issues/:key/comments` |
-| Post comment | `POST /issues/:key/comments` |
+| Post comment | `POST /issues/:key/comments` (`content`, `notifiedUserId[]`) |
 | Change status | `PATCH /issues/:key` (`statusId`, `comment`) |
 | Projects | `GET /projects?archived=false` |
 | Statuses | `GET /projects/:id/statuses` |
+| Project members | `GET /projects/:id/users` (@mention candidates) |
 | Issue types | `GET /projects/:id/issueTypes` |
 | Priorities | `GET /priorities` |
 | Create issue | `POST /issues` |

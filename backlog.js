@@ -72,8 +72,9 @@ class BacklogClient {
   comments(issueIdOrKey) {
     return this.get(`/issues/${issueIdOrKey}/comments`, { order: 'asc', count: 100 });
   }
-  addComment(issueIdOrKey, content) {
-    return this.post(`/issues/${issueIdOrKey}/comments`, { content });
+  // notifiedUserIds: user ids to notify (Backlog "お知らせ" / @mention targets).
+  addComment(issueIdOrKey, content, notifiedUserIds) {
+    return this.post(`/issues/${issueIdOrKey}/comments`, { content, notifiedUserId: notifiedUserIds });
   }
   updateStatus(issueIdOrKey, statusId, comment) {
     return this.patch(`/issues/${issueIdOrKey}`, { statusId, comment });
@@ -81,6 +82,7 @@ class BacklogClient {
 
   projects() { return this.get('/projects', { archived: false }); }
   projectStatuses(projectIdOrKey) { return this.get(`/projects/${projectIdOrKey}/statuses`); }
+  projectUsers(projectIdOrKey) { return this.get(`/projects/${projectIdOrKey}/users`); }
   issueTypes(projectIdOrKey) { return this.get(`/projects/${projectIdOrKey}/issueTypes`); }
   priorities() { return this.get('/priorities'); }
 
