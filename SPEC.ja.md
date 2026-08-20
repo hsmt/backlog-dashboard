@@ -1,7 +1,7 @@
 # Backlog Dashboard 仕様書
 
-- バージョン: 0.9.0
-- 最終更新: 2026-07-31
+- バージョン: 0.9.1
+- 最終更新: 2026-08-01
 - 対象プラットフォーム: macOS（Apple Silicon / arm64）
 
 ---
@@ -68,6 +68,8 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 - スペースドメイン（例: `yourspace.backlog.com`）と API キーを入力し「Save & connect」。
 - 保存時に `/users/myself` を叩いて疎通確認。失敗時はトーストでエラー表示。
 - 「Open API key settings ↗」で API キー発行ページを開く。
+- 最下部に**アプリのバージョン**（`Backlog Dashboard vX.Y.Z`）を表示。更新チェックが新バージョンを把握している場合は
+  `update available: vX.Y.Z` を併記する（追加の通信はせず、メイン側が保持している結果を読むだけ）。
 
 ---
 
@@ -161,7 +163,7 @@ Backlog の自分のタスクを扱う **macOS メニューバー常駐アプリ
 | 全既読 | `POST /notifications/markAsRead` |
 
 ### IPC チャンネル
-`config:get` / `config:set` / `me:id` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `form:projectUsers` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`。
+`config:get` / `config:set` / `app:info` / `me:id` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `form:projectUsers` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`。
 メイン→レンダラーのイベント: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new`。
 
 ---

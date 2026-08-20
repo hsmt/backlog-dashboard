@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('api', {
   getConfig: () => ipcRenderer.invoke('config:get'),
   setConfig: (cfg) => ipcRenderer.invoke('config:set', cfg),
   myUserId: () => ipcRenderer.invoke('me:id'),
+  appInfo: () => ipcRenderer.invoke('app:info'),
   // tasks
   myTasks: () => ipcRenderer.invoke('tasks:mine'),
   issueDetail: (issueKey) => ipcRenderer.invoke('issue:detail', issueKey),

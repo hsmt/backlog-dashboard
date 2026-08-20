@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.9.0</span>
+    <span class="chip">v0.9.1</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.9.0）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.9.0).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.9.1）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.9.1).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-07-31</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-08-01</code>
         </div>
       </div>
 
@@ -277,11 +277,13 @@
               <li>スペースドメイン（例: <code>yourspace.backlog.com</code>）と API キー。</li>
               <li>保存時に <code>/users/myself</code> で疎通確認。</li>
               <li>「Open API key settings ↗」で発行ページを開く。</li>
+              <li>最下部に<strong>アプリのバージョン</strong>を表示（更新があれば <code>update available: vX.Y.Z</code> を併記）。</li>
             </ul></div>
             <div class="l-en"><ul>
               <li>Space domain (e.g. <code>yourspace.backlog.com</code>) and API key.</li>
               <li>Verifies via <code>/users/myself</code> on save.</li>
               <li>"Open API key settings ↗" opens the issuance page.</li>
+              <li>The <strong>app version</strong> is shown at the bottom (with <code>update available: vX.Y.Z</code> when one is known).</li>
             </ul></div>
           </div>
         </div>
@@ -329,11 +331,11 @@
 └───────────────────────────────────────────────────────────────────┘</pre>
         <div class="l-ja">
           <p><strong>セキュリティ</strong>: <code>contextIsolation: true</code> / <code>nodeIntegration: false</code>。API キーはメインプロセスのみが保持し、レンダラーには渡さない。CSP で外部リソースを禁止。レンダラーに <code>innerHTML</code> 経路は無い（全てテキストノード）。</p>
-          <p><strong>ウィンドウ挙動</strong>: dock 非表示のアクセサリアプリ（<code>LSUIElement</code>）。メニューバー直下・右寄りに配置（トレイ座標が不正な場合のフォールバック付き）。<code>setVisibleOnAllWorkspaces</code> + <code>alwaysOnTop</code> で現在の Space／全画面上に表示。終了はトレイ右クリックの Quit のみ。</p>
+          <p><strong>ウィンドウ挙動</strong>: dock 非表示のアクセサリアプリ（<code>LSUIElement</code>）。メニューバー直下・右寄りに配置（トレイ座標が不正な場合のフォールバック付き）。<code>setVisibleOnAllWorkspaces</code> + <code>alwaysOnTop</code> で現在の Space／全画面上に表示。終了はトレイ右クリックの Quit のみ。トレイの右クリックメニュー先頭にはアプリのバージョンを表示する。</p>
         </div>
         <div class="l-en">
           <p><strong>Security</strong>: <code>contextIsolation: true</code> / <code>nodeIntegration: false</code>. The API key stays in the main process, never passed to the renderer. CSP forbids external resources. The renderer has no <code>innerHTML</code> path (everything is a text node).</p>
-          <p><strong>Window behavior</strong>: dock-hidden accessory app (<code>LSUIElement</code>). Anchored just below the menu bar, toward the right (with a fallback for invalid tray coordinates). <code>setVisibleOnAllWorkspaces</code> + <code>alwaysOnTop</code> keep it above the current Space / full-screen apps. Truly quits only via the tray's Quit.</p>
+          <p><strong>Window behavior</strong>: dock-hidden accessory app (<code>LSUIElement</code>). Anchored just below the menu bar, toward the right (with a fallback for invalid tray coordinates). <code>setVisibleOnAllWorkspaces</code> + <code>alwaysOnTop</code> keep it above the current Space / full-screen apps. Truly quits only via the tray's Quit. The tray's right-click menu leads with the app version.</p>
         </div>
         <h3><span class="l-ja">ファイル構成</span><span class="l-en">File layout</span></h3>
         <div class="table-wrap">
@@ -397,7 +399,7 @@
         </div>
         <h3><span class="l-ja">IPC チャンネル</span><span class="l-en">IPC channels</span></h3>
         <div class="chips">
-          <code>config:get</code><code>config:set</code><code>me:id</code><code>tasks:mine</code><code>issue:detail</code><code>issue:comment</code><code>issue:status</code><code>form:options</code><code>form:issueTypes</code><code>form:projectUsers</code><code>issue:create</code><code>notifications:list</code><code>notifications:markRead</code><code>notifications:markAllRead</code><code>notifications:unread</code><code>open:external</code><code>space:domain</code>
+          <code>config:get</code><code>config:set</code><code>app:info</code><code>me:id</code><code>tasks:mine</code><code>issue:detail</code><code>issue:comment</code><code>issue:status</code><code>form:options</code><code>form:issueTypes</code><code>form:projectUsers</code><code>issue:create</code><code>notifications:list</code><code>notifications:markRead</code><code>notifications:markAllRead</code><code>notifications:unread</code><code>open:external</code><code>space:domain</code>
         </div>
         <p style="font-size:13px;color:var(--muted);margin-top:8px">
           <span class="l-ja">メイン→レンダラーのイベント: </span><span class="l-en">Main → renderer events: </span>
@@ -491,8 +493,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.9.0 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.9.0 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.9.1 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.9.1 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 

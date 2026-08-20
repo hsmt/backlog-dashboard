@@ -187,6 +187,12 @@ textarea { resize: vertical; min-height: 64px; }
 .btn-row { display: flex; gap: 8px; margin-top: 14px; }
 .link { color: var(--accent); cursor: pointer; text-decoration: none; }
 
+.version {
+  margin-top: 22px; padding-top: 12px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--muted);
+}
+.version .version-update { color: var(--accent); font-weight: 600; margin-left: 8px; }
+
 /* ---- States ---- */
 .empty, .loading, .error {
   text-align: center; color: var(--muted); padding: 40px 20px;

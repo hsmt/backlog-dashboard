@@ -556,7 +556,21 @@ async function renderSettings() {
       if (d) api.openExternal(`https://${d}/EditApiSettings.action`);
       else toast('Enter your space domain first');
     } }, 'Open API key settings ↗'),
+    versionLine(),
   );
+}
+
+// Version footer. Filled in asynchronously so a slow IPC can't hold up the
+// settings form; it also reports whether a newer release is already known.
+function versionLine() {
+  const el = h('div', { class: 'version' }, 'Backlog Dashboard');
+  api.appInfo().then(({ version, updateVersion }) => {
+    el.replaceChildren(`Backlog Dashboard v${version}`);
+    if (updateVersion) {
+      el.append(h('span', { class: 'version-update' }, `update available: v${updateVersion}`));
+    }
+  }).catch(() => { el.textContent = 'Backlog Dashboard'; });
+  return el;
 }
 
 // ---------- notifications ----------

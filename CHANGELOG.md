@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [0.9.1] - 2026-08-01
+
+### Added / 追加
+- **EN:** The app version is now visible in two places: the tray's right-click menu leads with `Backlog Dashboard vX.Y.Z`, and Settings shows it at the bottom. When the update check has already found a newer release, Settings notes `update available: vX.Y.Z` beside it — read from what the main process is already holding, so it costs no extra request.
+- **JA:** アプリのバージョンを 2 か所で確認できるようにしました。トレイの右クリックメニュー先頭に `Backlog Dashboard vX.Y.Z` を表示し、設定画面の最下部にも表示します。更新チェックが新バージョンを把握している場合は、設定画面で `update available: vX.Y.Z` を併記します（メインプロセスが保持済みの結果を読むだけで、追加の通信は行いません）。
+
+---
+
 ## [0.9.0] - 2026-07-31
 
 ### Added / 追加

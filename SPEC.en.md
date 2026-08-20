@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.9.0
-- Last updated: 2026-07-31
+- Version: 0.9.1
+- Last updated: 2026-08-01
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -68,6 +68,9 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - Enter the space domain (e.g. `yourspace.backlog.com`) and API key, then "Save & connect".
 - On save, `/users/myself` is called to verify connectivity. Failures are shown via a toast.
 - "Open API key settings ↗" opens the API key issuance page.
+- The **app version** (`Backlog Dashboard vX.Y.Z`) is shown at the bottom, with `update available: vX.Y.Z`
+  alongside it when the update check has already found a newer release (no extra request — it just reads what
+  the main process is holding).
 
 ---
 
@@ -161,7 +164,7 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 | Mark all read | `POST /notifications/markAsRead` |
 
 ### IPC channels
-`config:get` / `config:set` / `me:id` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `form:projectUsers` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`.
+`config:get` / `config:set` / `app:info` / `me:id` / `tasks:mine` / `issue:detail` / `issue:comment` / `issue:status` / `form:options` / `form:issueTypes` / `form:projectUsers` / `issue:create` / `notifications:list` / `notifications:markRead` / `notifications:markAllRead` / `notifications:unread` / `open:external` / `space:domain`.
 Main → renderer events: `window:shown` / `tasks:refresh` / `notifications:updated` / `notifications:new`.
 
 ---

@@ -330,6 +330,8 @@ function createTray() {
   tray.on('click', toggleWindow);
   tray.on('right-click', () => {
     const items = [
+      { label: `Backlog Dashboard v${app.getVersion()}`, enabled: false },
+      { type: 'separator' },
       { label: 'Open', click: toggleWindow },
       { label: 'Refresh', click: () => win && !win.isDestroyed() && win.webContents.send('tasks:refresh') },
     ];
@@ -378,6 +380,13 @@ ipcMain.handle('config:set', async (_e, { spaceDomain, apiKey }) => {
   startPolling(); // (re)start notification polling for the new credentials
   return { ok: true };
 });
+
+// Version, plus whatever the update check last found — seeing the version
+// usually goes with wanting to know whether it's the current one.
+ipcMain.handle('app:info', () => ({
+  version: app.getVersion(),
+  updateVersion: availableUpdate ? availableUpdate.version : null,
+}));
 
 ipcMain.handle('me:id', async () => {
   requireClient();
