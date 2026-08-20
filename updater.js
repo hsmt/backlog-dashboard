@@ -166,6 +166,12 @@ async function downloadAndStage(update, onProgress = () => {}) {
 function buildSwapScript({ pid, relaunch = true }) {
   return `#!/bin/bash
 set -u
+# Clean up this script on every exit path. It deliberately sits outside $WORK —
+# a running script must not live in the tree it deletes — so nothing else would
+# ever remove it, and one would pile up per update. Unlinking it while it runs is
+# safe: bash keeps reading through its open descriptor, which outlives the name.
+trap 'rm -f "$0"' EXIT
+
 # Paths arrive as arguments, never interpolated into the script: bash expands
 # "$(…)" and backticks inside double quotes, so a bundle path containing them
 # would otherwise be executed rather than used.

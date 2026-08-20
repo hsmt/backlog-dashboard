@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
+## [Unreleased]
+
+### Fixed / 修正
+- **EN:** The self-update's swap script no longer leaves itself behind in the temp directory after an update. It sits outside the work directory it deletes, so nothing else ever removed it and one accumulated per update; it now removes itself on exit via a `trap`, covering the success, rollback and early-exit paths.
+- **JA:** 自動更新のスワップスクリプトが、更新のたびに一時ディレクトリへ残る問題を修正しました。このスクリプトは削除対象の作業ディレクトリの外に置いているため誰も消す機会がなく、更新ごとに 1 つずつ溜まっていました。終了時に `trap` で自身を削除するようにし、成功・ロールバック・早期 exit のいずれの経路でも残らないようにしています。
+
+---
+
 ## [0.9.1] - 2026-08-01
 
 ### Added / 追加

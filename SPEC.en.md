@@ -212,8 +212,9 @@ standard updater (see §10). Until then the swap is done in-house.
   waits for the old process to exit (up to 10s), **backs up the existing bundle**, `ditto`s the new one in, strips
   `com.apple.quarantine`, and relaunches. Paths are passed as arguments rather than interpolated into the script,
   since bash expands `$(…)` and backticks even inside double quotes. **If the copy fails, the backup is restored**, so a partial failure can't
-  leave the user with no app. The script lives outside the work directory it deletes (a running script must not
-  delete itself).
+  leave the user with no app. The script lives outside the work directory it deletes (so removing `$WORK` can't pull it out from under itself
+  mid-read) and removes itself on exit via `trap ... EXIT`, covering the success, rollback and early-exit paths so
+  no temp file accumulates per update.
 - **Disabled when**: `app.isPackaged` is false (`npm start` — there's no `.app` to replace), the platform isn't
   macOS, or the bundle's parent directory isn't writable. In those cases no check runs at all.
 
