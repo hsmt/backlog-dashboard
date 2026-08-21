@@ -18,6 +18,12 @@ let lastNotificationId = 0; // highest notification id we've already handled
 let unreadCount = 0; // last known unread count (source of truth for tray/header badge)
 let availableUpdate = null; // newest release when it's newer than us, else null
 let notifiedUpdateVersion = null; // so a pending update only notifies once
+// Electron docs: unlike getHistory() notifications, a `new Notification()` instance
+// can stop responding to clicks once it's garbage collected — the OS-level banner
+// stays on screen, but nothing holds the JS wrapper that carries the listeners.
+// Keep a strong reference for as long as the banner could plausibly still be
+// clicked, and drop it on 'close' (or after a cap) so this doesn't leak forever.
+const activeNotifications = new Set();
 let updateInProgress = false;
 
 // Single-instance: focus the existing window instead of launching a duplicate.
@@ -111,14 +117,34 @@ function showNativeNotification(n) {
   const body = key
     ? `${key}  ${(n.issue && n.issue.summary) || ''}`.trim()
     : (n.project ? n.project.name : 'Backlog');
-  const notif = new Notification({ title, body });
-  // Clicking a macOS notification opens the item in the browser (same target as
-  // the in-app "Open in Backlog ↗" link), rather than the app's own popover.
-  notif.on('click', () => {
+  const notif = new Notification({
+    title, body,
+    // Explicit button as an alternative to clicking the banner body — macOS only
+    // shows it when the notification style is "Alerts" (persistent) rather than
+    // "Banners"; System Settings > Notifications > Backlog Dashboard controls that.
+    actions: [{ type: 'button', text: 'Open in Browser' }],
+  });
+  // Clicking the banner (or its "Open in Browser" button) opens the item in the
+  // browser — same target as the in-app "Open in Backlog ↗" link — rather than
+  // the app's own popover.
+  const open = () => {
     if (!client) return;
     const url = key ? `https://${client.spaceDomain}/view/${key}` : `https://${client.spaceDomain}/`;
     shell.openExternal(url);
-  });
+  };
+  notif.on('click', open);
+  notif.on('action', open);
+  // Hold a reference until the banner is dismissed — an Electron Notification can
+  // stop responding to clicks once the JS wrapper is garbage collected, even
+  // though the OS-level banner is still on screen (see getHistory() docs).
+  // 'close' only fires for a manual dismissal, not for a banner that auto-expires
+  // into Notification Center's list (still clickable there) — so this app stays
+  // running for weeks, a fixed timeout backstops that path to avoid an unbounded
+  // Set. 10 minutes covers realistic "saw it, clicked it a bit later" use.
+  activeNotifications.add(notif);
+  const release = () => activeNotifications.delete(notif);
+  notif.on('close', release);
+  setTimeout(release, 10 * 60 * 1000);
   notif.show();
 }
 

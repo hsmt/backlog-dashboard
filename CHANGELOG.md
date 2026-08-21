@@ -6,11 +6,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Dates are JST.
 
 ---
 
-## [Unreleased]
+## [0.9.2] - 2026-08-02
 
 ### Fixed / 修正
-- **EN:** The self-update's swap script no longer leaves itself behind in the temp directory after an update. It sits outside the work directory it deletes, so nothing else ever removed it and one accumulated per update; it now removes itself on exit via a `trap`, covering the success, rollback and early-exit paths.
-- **JA:** 自動更新のスワップスクリプトが、更新のたびに一時ディレクトリへ残る問題を修正しました。このスクリプトは削除対象の作業ディレクトリの外に置いているため誰も消す機会がなく、更新ごとに 1 つずつ溜まっていました。終了時に `trap` で自身を削除するようにし、成功・ロールバック・早期 exit のいずれの経路でも残らないようにしています。
+- **EN:** macOS notification banners could stop responding to clicks. The `Notification` instance was only referenced by a local variable inside the function that created it, so once that function returned, nothing kept it alive — Electron notes that an unreferenced `new Notification()` can be garbage collected and lose its click handler even while the OS-level banner is still visible ([`getHistory()` docs](https://www.electronjs.org/docs/latest/api/notification)). Shown notifications are now held in a `Set` until they close (or a 10-minute timeout backstop, since a banner that auto-expires into Notification Center doesn't always fire `close`).
+- **JA:** macOS の通知バナーがクリックに反応しなくなることがある問題を修正しました。`Notification` インスタンスが、それを作成した関数内のローカル変数からしか参照されておらず、関数を抜けた後は何も生存を保証していませんでした。Electron のドキュメント（[`getHistory()`](https://www.electronjs.org/docs/latest/api/notification)）には、参照を保持しない `new Notification()` はガベージコレクションされうり、OS 側のバナーが画面に残っていてもクリックハンドラが働かなくなる場合があると記載されています。表示した通知は、閉じられるか 10 分のタイムアウト（自動で通知センターへ移動したバナーは `close` が発火しないことがあるための保険）が経過するまで `Set` に保持するようにしました。
+
+### Added / 追加
+- **EN:** macOS notifications now carry an explicit **"Open in Browser" button**, as an alternative to clicking the banner body (macOS only shows it when the notification style is set to "Alerts" rather than "Banners").
+- **JA:** macOS の通知に、バナー本文のクリックに代わる明示的な**「Open in Browser」ボタン**を追加しました（macOS の通知スタイルが「バナー」ではなく「通知」の場合にのみ表示されます）。
 
 ---
 

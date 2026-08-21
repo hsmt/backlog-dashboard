@@ -1,7 +1,7 @@
 # Backlog Dashboard — Specification
 
-- Version: 0.9.1
-- Last updated: 2026-08-01
+- Version: 0.9.2
+- Last updated: 2026-08-02
 - Target platform: macOS (Apple Silicon / arm64)
 
 ---
@@ -79,7 +79,9 @@ The window **hides** (is not destroyed) on losing focus or on pressing the close
 - The main process polls the Backlog notifications API every **60 seconds** (`POLL_INTERVAL_MS`).
 - **New-item detection**: notifications with an ID greater than the stored `lastNotificationId` and still unread are treated as new and shown as native macOS notifications.
 - **On first launch**, only the current max ID is stored as a baseline — no notifications are fired (prevents startup spam).
-- Notification title = "sender + reason", body = "issue key + summary". **Clicking opens the issue on Backlog's web page** (`https://<space>/view/<issue-key>`) in the browser (notifications without an issue open the space's home page). The app's popover is not opened.
+- Notification title = "sender + reason", body = "issue key + summary". **Clicking the banner body, or its "Open in Browser" button,** opens the issue on Backlog's web page (`https://<space>/view/<issue-key>`) in the browser (notifications without an issue open the space's home page). The app's popover is not opened.
+  - **The button (`actions`) only appears when macOS's notification style is "Alerts"** — under "Banners" it's absent, though clicking the banner body still works either way.
+  - A shown `Notification` instance is kept in a module-scope `Set` until it closes or a **10-minute timeout** elapses. Electron notifications that go unreferenced can stop firing click events once garbage collected, even while the OS-level banner is still visible (documented in the `getHistory()` reference).
 - The **unread count** from `/notifications/count?alreadyRead=false` is reflected in the menu-bar icon title and the header unread-count badge. The main process keeps the latest count (`unreadCount`) as its source of truth.
 - **Header unread-count badge** (the only entry point to the notifications list):
   - An **18px circle** showing the count. 1–9 exact, **`9+` for 10 or more** (keeps the circle round). Digits use `tabular-nums` so the width doesn't jitter.

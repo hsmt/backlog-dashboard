@@ -120,7 +120,7 @@
         <span class="l-ja">仕様書</span><span class="l-en">Specification</span>
       </div>
     </div>
-    <span class="chip">v0.9.1</span>
+    <span class="chip">v0.9.2</span>
     <div class="controls">
       <div class="seg" role="group" aria-label="Language">
         <button id="ja" aria-pressed="true">JA</button>
@@ -149,10 +149,10 @@
     <main>
       <div style="margin-bottom:26px">
         <h1><span class="l-ja">Backlog Dashboard 仕様書</span><span class="l-en">Backlog Dashboard — Specification</span></h1>
-        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.9.1）の実装に基づく仕様。</p>
-        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.9.1).</p>
+        <p class="lede l-ja">Backlog の自分のタスクを扱う macOS メニューバー常駐アプリ。現状（v0.9.2）の実装に基づく仕様。</p>
+        <p class="lede l-en">A macOS menu-bar resident app for your own Backlog tasks. Specification based on the current implementation (v0.9.2).</p>
         <div class="chips">
-          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-08-01</code>
+          <code>macOS · Apple Silicon</code><code>Electron 32</code><code>Backlog REST API v2</code><code>2026-08-02</code>
         </div>
       </div>
 
@@ -295,7 +295,7 @@
           <li>メインプロセスが <strong>60 秒間隔</strong>（<code>POLL_INTERVAL_MS</code>）で通知 API をポーリング。</li>
           <li><strong>新着判定</strong>: 保存済み <code>lastNotificationId</code> より大きい ID かつ未読を新着とみなし macOS ネイティブ通知を表示。</li>
           <li><strong>初回起動時</strong>は最大 ID を基準保存するだけで通知は出さない（起動時スパム防止）。</li>
-          <li>通知タイトル=「差出人＋種別」、本文=「課題キー＋件名」。<strong>クリックで該当課題を Backlog のブラウザページで開く</strong>（課題を伴わない通知はスペースのトップ）。アプリは開かない。</li>
+          <li>通知タイトル=「差出人＋種別」、本文=「課題キー＋件名」。<strong>バナー本文または「Open in Browser」ボタン</strong>のクリックで該当課題を Backlog のブラウザページで開く（課題を伴わない通知はスペースのトップ）。アプリは開かない。ボタンは通知スタイルが「通知」（Alerts）の場合のみ表示。表示中の <code>Notification</code> は GC によるクリック不発を避けるため、閉じるか 10 分経つまで参照を保持する。</li>
           <li><strong>未読数</strong>をメニューバーアイコン横とヘッダーの未読数バッジに反映（メイン側が <code>unreadCount</code> を保持）。</li>
           <li><strong>ヘッダーの未読数バッジ</strong>: 18px の円に件数（10 件以上は <code>9+</code>）。未読=赤 <code>#c84553</code>／0 件=グレーに「0」で<strong>常時表示</strong>（通知一覧への唯一の導線のため）。いずれも白文字に対し 4.5:1 以上。</li>
           <li><strong>既読時のバッジは楽観的更新</strong>: count API の反映遅延を避け、既読操作で即座に -1 → 次回ポーリングで整合。</li>
@@ -306,7 +306,7 @@
           <li>The main process polls the notifications API every <strong>60s</strong> (<code>POLL_INTERVAL_MS</code>).</li>
           <li><strong>New-item detection</strong>: IDs greater than the stored <code>lastNotificationId</code> and still unread are shown as native macOS notifications.</li>
           <li><strong>On first launch</strong>, only the max ID is stored as a baseline — nothing fires (prevents startup spam).</li>
-          <li>Title = "sender + reason", body = "issue key + summary". <strong>Click opens the issue on Backlog's web page in the browser</strong> (notifications without an issue open the space home). Doesn't open the app.</li>
+          <li>Title = "sender + reason", body = "issue key + summary". <strong>Clicking the banner body, or its "Open in Browser" button,</strong> opens the issue on Backlog's web page in the browser (notifications without an issue open the space home). Doesn't open the app. The button only shows when the notification style is "Alerts". A shown <code>Notification</code> is kept referenced until closed or 10 minutes pass, to avoid a GC'd instance silently losing its click handler.</li>
           <li>The <strong>unread count</strong> shows next to the menu-bar icon and on the header unread-count badge (main holds <code>unreadCount</code>).</li>
           <li><strong>Header unread badge</strong>: an 18px circle with the count (<code>9+</code> past 10). Red <code>#c84553</code> while unread, grey "0" at zero, <strong>always visible</strong> (it's the only way into the list). Both fills clear 4.5:1 against white.</li>
           <li><strong>Optimistic badge on read</strong>: to dodge the count API's lag, a read decrements by one immediately; the next poll reconciles.</li>
@@ -495,8 +495,8 @@
   </div>
 
   <footer>
-    <span class="l-ja">Backlog Dashboard v0.9.1 · 個人用ツール · 本ページは自己完結の HTML です。</span>
-    <span class="l-en">Backlog Dashboard v0.9.1 · personal tool · this page is self-contained HTML.</span>
+    <span class="l-ja">Backlog Dashboard v0.9.2 · 個人用ツール · 本ページは自己完結の HTML です。</span>
+    <span class="l-en">Backlog Dashboard v0.9.2 · personal tool · this page is self-contained HTML.</span>
   </footer>
 </div>
 
