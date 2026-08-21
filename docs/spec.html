@@ -225,14 +225,14 @@
               <li><strong>ステータス変更</strong>（プロジェクトのステータス一覧から）。</li>
               <li>説明・<strong>コメント一覧</strong>（変更ログ含む）。</li>
               <li><strong>コメント投稿</strong>。更新後は再取得して再描画。</li>
-              <li><strong>＠メンション通知</strong>: <code>@</code> で参加ユーザー候補→選択で通知対象に。チップで管理し <code>notifiedUserId[]</code> でお知らせ送信。</li>
+              <li><strong>＠メンション通知</strong>: <code>@</code> で参加ユーザー候補→選択で通知対象に。チップで管理し <code>notifiedUserId[]</code> でお知らせ送信。お知らせは届くが、<strong>REST API 経由のメンションは Backlog のユーザーページへのリンク化はされない</strong>（Web UI 版は <code>&lt;a data-linktype="mention"&gt;</code>、API 版はプレーンテキストのままと実機で確認）。</li>
             </ul></div>
             <div class="l-en"><ul>
               <li>Issue key, <strong>status badge</strong> (colored per Backlog's status color), summary, meta, "Open in Backlog ↗".</li>
               <li><strong>Status change</strong> (from the project's status list).</li>
               <li>Description and <strong>comment list</strong> (incl. change log).</li>
               <li><strong>Comment form</strong>. Refetches and re-renders after updates.</li>
-              <li><strong>@mention notify</strong>: <code>@</code> lists members → pick to notify; managed as chips, sent via <code>notifiedUserId[]</code>.</li>
+              <li><strong>@mention notify</strong>: <code>@</code> lists members → pick to notify; managed as chips, sent via <code>notifiedUserId[]</code>. Notification delivery works, but <strong>REST API mentions don't link to the user's Backlog page</strong> (verified: web-UI mentions render as <code>&lt;a data-linktype="mention"&gt;</code>, API-created ones stay plain text).</li>
             </ul></div>
           </div>
           <div class="card">
@@ -460,6 +460,7 @@
           <li>課題を伴わない通知（PR 等）はアプリ内詳細に遷移せず Backlog をブラウザで開く。</li>
           <li>自動起動は手動設定。Slack 連携は未実装。</li>
           <li><strong>「Mark read」は送信者側グリーンチェックを保証しない</strong>: 公式の既読 API を呼ぶが、実測では <code>alreadyRead</code>・未読数の変化を確認できず、グリーンチェックは Web UI 閲覧に紐づく可能性がある（<a href="https://support-ja.backlog.com/hc/ja/articles/360035642454" target="_blank" rel="noopener">お知らせ機能の概要</a>）。</li>
+          <li><strong>REST API のコメント内 @メンションはリンク化されない</strong>: Web UI 版は <code>&lt;a data-linktype="mention" href="/user/&lt;userId&gt;"&gt;</code>、REST API 版（本アプリ含む）は同一文言・<code>notifiedUserId[]</code> でもプレーンテキストのまま（実機で HTML を比較して確認）。お知らせ自体は両方とも正しく届く。</li>
         </ul></div>
         <div class="l-en"><ul>
           <li><strong>Apple Silicon only</strong> (no Intel; universal build unsupported).</li>
@@ -469,6 +470,7 @@
           <li>Notifications without an issue (PRs, etc.) open Backlog in the browser, not an in-app detail.</li>
           <li>Auto-start is manual. Slack integration is not implemented.</li>
           <li><strong>"Mark read" doesn't guarantee the sender-side green checkmark</strong>: it calls the official read API, but testing showed no observable change to <code>alreadyRead</code> or the unread count — the checkmark may be tied to web-UI viewing (<a href="https://support-ja.backlog.com/hc/ja/articles/360035642454" target="_blank" rel="noopener">お知らせ機能の概要</a>).</li>
+          <li><strong>@mentions in REST API comments don't link to the user's page</strong>: web-UI mentions render as <code>&lt;a data-linktype="mention" href="/user/&lt;userId&gt;"&gt;</code>; REST API ones (incl. this app) stay plain text with identical wording and <code>notifiedUserId[]</code> (verified by comparing rendered HTML on a real account). Notification delivery works either way.</li>
         </ul></div>
       </section>
 
